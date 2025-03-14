@@ -1,4 +1,4 @@
-import { StyleSheet, View, PanResponder, Dimensions, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, PanResponder, Dimensions, TouchableOpacity, Text, GestureResponderEvent, PanResponderGestureState, NativeTouchEvent } from 'react-native';
 import Canvas, { CanvasRenderingContext2D } from 'react-native-canvas';
 import { useRef, useEffect, useState } from 'react';
 
@@ -56,18 +56,36 @@ const DrawingCanvas = () => {
     }
   };
 
+  const isStylus = (evt: GestureResponderEvent): boolean => {
+    const nativeEvent = evt.nativeEvent as NativeTouchEvent & { touchType?: 'stylus' | 'touch' };
+    // Check for Apple Pencil
+    const isApplePencil = nativeEvent.force !== undefined && nativeEvent.force > 0;
+    // Check for Android stylus or any other stylus
+    const isStylusTouch = nativeEvent.touchType === 'stylus';
+    
+    return isApplePencil || isStylusTouch;
+  };
+
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: (evt) => {
-      const { locationX, locationY } = evt.nativeEvent;
-      setCurrentPath([{ x: locationX, y: locationY }]);
+    onStartShouldSetPanResponder: (evt: GestureResponderEvent, _: PanResponderGestureState): boolean => {
+      return isStylus(evt);
     },
-    onPanResponderMove: (evt) => {
-      const { locationX, locationY } = evt.nativeEvent;
-      const newPath = [...currentPath, { x: locationX, y: locationY }];
-      setCurrentPath(newPath);
-      drawPath(newPath);
+    onMoveShouldSetPanResponder: (evt: GestureResponderEvent, _: PanResponderGestureState): boolean => {
+      return isStylus(evt);
+    },
+    onPanResponderGrant: (evt: GestureResponderEvent) => {
+      if (isStylus(evt)) {
+        const { locationX, locationY } = evt.nativeEvent;
+        setCurrentPath([{ x: locationX, y: locationY }]);
+      }
+    },
+    onPanResponderMove: (evt: GestureResponderEvent) => {
+      if (isStylus(evt)) {
+        const { locationX, locationY } = evt.nativeEvent;
+        const newPath = [...currentPath, { x: locationX, y: locationY }];
+        setCurrentPath(newPath);
+        drawPath(newPath);
+      }
     },
     onPanResponderRelease: () => {
       setCurrentPath([]);
