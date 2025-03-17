@@ -20,6 +20,7 @@ const DrawingCanvas = () => {
   const [currentColor, setCurrentColor] = useState(COLORS[0]);
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(STROKE_WIDTHS[1]);
   const lastPointRef = useRef<Point | null>(null);
+  const isDrawingRef = useRef(false);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -44,14 +45,13 @@ const DrawingCanvas = () => {
     }
   }, [context, currentColor, currentStrokeWidth]);
 
-  const drawPoint = useCallback((point: Point) => {
-    if (context && lastPointRef.current) {
-      context.beginPath();
-      context.moveTo(lastPointRef.current.x, lastPointRef.current.y);
-      context.lineTo(point.x, point.y);
-      context.stroke();
-    }
-    lastPointRef.current = point;
+  const drawLine = useCallback((start: Point, end: Point) => {
+    if (!context) return;
+    
+    context.beginPath();
+    context.moveTo(start.x, start.y);
+    context.lineTo(end.x, end.y);
+    context.stroke();
   }, [context]);
 
   const panResponder = PanResponder.create({
@@ -62,22 +62,17 @@ const DrawingCanvas = () => {
       const point = { x: locationX, y: locationY };
       currentPathRef.current = [point];
       lastPointRef.current = point;
+      isDrawingRef.current = true;
     },
     onPanResponderMove: (evt) => {
+      if (!isDrawingRef.current || !lastPointRef.current) return;
+      
       const { locationX, locationY } = evt.nativeEvent;
       const point = { x: locationX, y: locationY };
       
-      // Only draw if the point is far enough from the last point
-      if (lastPointRef.current) {
-        const dx = point.x - lastPointRef.current.x;
-        const dy = point.y - lastPointRef.current.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance > 1) { // Threshold to reduce unnecessary drawing
-          drawPoint(point);
-          currentPathRef.current.push(point);
-        }
-      }
+      drawLine(lastPointRef.current, point);
+      currentPathRef.current.push(point);
+      lastPointRef.current = point;
     },
     onPanResponderRelease: () => {
       if (currentPathRef.current.length > 0) {
@@ -85,6 +80,15 @@ const DrawingCanvas = () => {
       }
       currentPathRef.current = [];
       lastPointRef.current = null;
+      isDrawingRef.current = false;
+    },
+    onPanResponderTerminate: () => {
+      if (currentPathRef.current.length > 0) {
+        pathsRef.current.push([...currentPathRef.current]);
+      }
+      currentPathRef.current = [];
+      lastPointRef.current = null;
+      isDrawingRef.current = false;
     },
   });
 
