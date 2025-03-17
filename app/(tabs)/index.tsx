@@ -53,24 +53,38 @@ const DrawingCanvas = () => {
   };
 
   const isStylus = (evt: GestureResponderEvent): boolean => {
-    const nativeEvent = evt.nativeEvent as NativeTouchEvent & { touchType?: 'stylus' | 'touch' };
-    return (nativeEvent.force !== undefined && nativeEvent.force > 0) || nativeEvent.touchType === 'stylus';
+    const touch = evt.nativeEvent;
+    console.log(touch.force);
+  
+    if (touch.force && touch.force > 0) {
+      return true;
+    }
+  
+    if ('radiusX' in touch && touch.radiusX < 4 && 'radiusY' in touch && touch.radiusY < 4) {
+      return true;
+    }
+  
+    return false;
   };
 
   console.log(isStylus);
 
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: (evt) => isStylus(evt),
-    onMoveShouldSetPanResponder: (evt) => isStylus(evt),
+    onStartShouldSetPanResponder: (evt) => {
+      return isStylus(evt);
+    },
+    onMoveShouldSetPanResponder: (evt) => {
+      return isStylus(evt);
+    },
     onPanResponderGrant: (evt) => {
+      const { locationX, locationY } = evt.nativeEvent;
       if (isStylus(evt)) {
-        const { locationX, locationY } = evt.nativeEvent;
         setPaths((prevPaths) => [...prevPaths, [{ x: locationX, y: locationY }]]);
       }
     },
     onPanResponderMove: (evt) => {
+      const { locationX, locationY } = evt.nativeEvent;
       if (isStylus(evt)) {
-        const { locationX, locationY } = evt.nativeEvent;
         setPaths((prevPaths) => {
           const updatedPaths = [...prevPaths];
           const lastPath = updatedPaths[updatedPaths.length - 1] || [];
@@ -98,6 +112,10 @@ const DrawingCanvas = () => {
               />
             ))}
           </View>
+        </View>
+        <View style={styles.controlSection}>
+          <Text style={styles.controlTitle}>Version</Text>
+          <Text style={styles.versionText}>v1</Text>
         </View>
         <View style={styles.controlSection}>
           <Text style={styles.controlTitle}>Stroke Width</Text>
@@ -179,6 +197,11 @@ const styles = StyleSheet.create({
   selectedOption: {
     borderWidth: 2,
     borderColor: '#007AFF',
+  },
+  versionText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#007AFF',
   },
   canvasContainer: {
     flex: 1,
