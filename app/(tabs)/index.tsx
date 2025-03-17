@@ -1,6 +1,6 @@
 import { StyleSheet, View, PanResponder, Dimensions, TouchableOpacity, Text, GestureResponderEvent, PanResponderGestureState, NativeTouchEvent } from 'react-native';
 import Canvas, { CanvasRenderingContext2D } from 'react-native-canvas';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 interface Point {
   x: number;
@@ -15,9 +15,11 @@ const STROKE_WIDTHS = [2, 4, 6, 8, 10];
 const DrawingCanvas = () => {
   const canvasRef = useRef<Canvas | null>(null);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  const [paths, setPaths] = useState<Point[][]>([]);
+  const pathsRef = useRef<Point[][]>([]);
+  const currentPathRef = useRef<Point[]>([]);
   const [currentColor, setCurrentColor] = useState(COLORS[0]);
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(STROKE_WIDTHS[1]);
+  const lastPointRef = useRef<Point | null>(null);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -29,6 +31,7 @@ const DrawingCanvas = () => {
         ctx.fillStyle = '#F5F5F5';
         ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         setContext(ctx);
       }
     }
@@ -41,36 +44,48 @@ const DrawingCanvas = () => {
     }
   }, [context, currentColor, currentStrokeWidth]);
 
-  const drawPath = (path: Point[]) => {
-    if (context && path.length > 1) {
+  const drawPoint = useCallback((point: Point) => {
+    if (context && lastPointRef.current) {
       context.beginPath();
-      context.moveTo(path[0].x, path[0].y);
-      for (let i = 1; i < path.length; i++) {
-        context.lineTo(path[i].x, path[i].y);
-      }
+      context.moveTo(lastPointRef.current.x, lastPointRef.current.y);
+      context.lineTo(point.x, point.y);
       context.stroke();
     }
-  };
+    lastPointRef.current = point;
+  }, [context]);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
     onPanResponderGrant: (evt) => {
       const { locationX, locationY } = evt.nativeEvent;
-      setPaths((prevPaths) => [...prevPaths, [{ x: locationX, y: locationY }]]);
+      const point = { x: locationX, y: locationY };
+      currentPathRef.current = [point];
+      lastPointRef.current = point;
     },
     onPanResponderMove: (evt) => {
       const { locationX, locationY } = evt.nativeEvent;
-      setPaths((prevPaths) => {
-        const updatedPaths = [...prevPaths];
-        const lastPath = updatedPaths[updatedPaths.length - 1] || [];
-        lastPath.push({ x: locationX, y: locationY });
-        updatedPaths[updatedPaths.length - 1] = lastPath;
-        drawPath(lastPath);
-        return updatedPaths;
-      });
+      const point = { x: locationX, y: locationY };
+      
+      // Only draw if the point is far enough from the last point
+      if (lastPointRef.current) {
+        const dx = point.x - lastPointRef.current.x;
+        const dy = point.y - lastPointRef.current.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 1) { // Threshold to reduce unnecessary drawing
+          drawPoint(point);
+          currentPathRef.current.push(point);
+        }
+      }
     },
-    onPanResponderRelease: () => {},
+    onPanResponderRelease: () => {
+      if (currentPathRef.current.length > 0) {
+        pathsRef.current.push([...currentPathRef.current]);
+      }
+      currentPathRef.current = [];
+      lastPointRef.current = null;
+    },
   });
 
   return (
