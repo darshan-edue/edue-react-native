@@ -52,48 +52,23 @@ const DrawingCanvas = () => {
     }
   };
 
-  const isStylus = (evt: GestureResponderEvent): boolean => {
-    const touch = evt.nativeEvent;
-    console.log(touch.force);
-  
-    if (touch.force && touch.force > 0) {
-      return true;
-    }
-  
-    if ('radiusX' in touch && touch.radiusX < 4 && 'radiusY' in touch && touch.radiusY < 4) {
-      return true;
-    }
-  
-    return false;
-  };
-
-  console.log(isStylus);
-
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: (evt) => {
-      return isStylus(evt);
-    },
-    onMoveShouldSetPanResponder: (evt) => {
-      return isStylus(evt);
-    },
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
     onPanResponderGrant: (evt) => {
       const { locationX, locationY } = evt.nativeEvent;
-      if (isStylus(evt)) {
-        setPaths((prevPaths) => [...prevPaths, [{ x: locationX, y: locationY }]]);
-      }
+      setPaths((prevPaths) => [...prevPaths, [{ x: locationX, y: locationY }]]);
     },
     onPanResponderMove: (evt) => {
       const { locationX, locationY } = evt.nativeEvent;
-      if (isStylus(evt)) {
-        setPaths((prevPaths) => {
-          const updatedPaths = [...prevPaths];
-          const lastPath = updatedPaths[updatedPaths.length - 1] || [];
-          lastPath.push({ x: locationX, y: locationY });
-          updatedPaths[updatedPaths.length - 1] = lastPath;
-          drawPath(lastPath);
-          return updatedPaths;
-        });
-      }
+      setPaths((prevPaths) => {
+        const updatedPaths = [...prevPaths];
+        const lastPath = updatedPaths[updatedPaths.length - 1] || [];
+        lastPath.push({ x: locationX, y: locationY });
+        updatedPaths[updatedPaths.length - 1] = lastPath;
+        drawPath(lastPath);
+        return updatedPaths;
+      });
     },
     onPanResponderRelease: () => {},
   });
@@ -115,7 +90,7 @@ const DrawingCanvas = () => {
         </View>
         <View style={styles.controlSection}>
           <Text style={styles.controlTitle}>Version</Text>
-          <Text style={styles.versionText}>v1</Text>
+          <Text style={styles.versionText}>v2</Text>
         </View>
         <View style={styles.controlSection}>
           <Text style={styles.controlTitle}>Stroke Width</Text>
