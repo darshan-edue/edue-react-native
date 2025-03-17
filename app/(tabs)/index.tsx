@@ -15,26 +15,22 @@ const STROKE_WIDTHS = [2, 4, 6, 8, 10];
 const DrawingCanvas = () => {
   const canvasRef = useRef<Canvas | null>(null);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  const [currentPath, setCurrentPath] = useState<Point[]>([]);
+  const [paths, setPaths] = useState<Point[][]>([]);
   const [currentColor, setCurrentColor] = useState(COLORS[0]);
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(STROKE_WIDTHS[1]);
 
   useEffect(() => {
     if (canvasRef.current) {
-      // Set canvas dimensions explicitly
       canvasRef.current.width = SCREEN_WIDTH;
       canvasRef.current.height = SCREEN_HEIGHT;
       
       const ctx = canvasRef.current.getContext('2d');
-      // Fill background
-      ctx.fillStyle = '#F5F5F5';
-      ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-      
-      // Set drawing styles
-      ctx.strokeStyle = currentColor;
-      ctx.lineWidth = currentStrokeWidth;
-      ctx.lineCap = 'round';
-      setContext(ctx);
+      if (ctx) {
+        ctx.fillStyle = '#F5F5F5';
+        ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        ctx.lineCap = 'round';
+        setContext(ctx);
+      }
     }
   }, []);
 
@@ -43,14 +39,14 @@ const DrawingCanvas = () => {
       context.strokeStyle = currentColor;
       context.lineWidth = currentStrokeWidth;
     }
-  }, [currentColor, currentStrokeWidth]);
+  }, [context, currentColor, currentStrokeWidth]);
 
-  const drawPath = (points: Point[]) => {
-    if (context && points.length > 1) {
+  const drawPath = (path: Point[]) => {
+    if (context && path.length > 1) {
       context.beginPath();
-      context.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        context.lineTo(points[i].x, points[i].y);
+      context.moveTo(path[0].x, path[0].y);
+      for (let i = 1; i < path.length; i++) {
+        context.lineTo(path[i].x, path[i].y);
       }
       context.stroke();
     }
@@ -58,38 +54,34 @@ const DrawingCanvas = () => {
 
   const isStylus = (evt: GestureResponderEvent): boolean => {
     const nativeEvent = evt.nativeEvent as NativeTouchEvent & { touchType?: 'stylus' | 'touch' };
-    // Check for Apple Pencil
-    const isApplePencil = nativeEvent.force !== undefined && nativeEvent.force > 0;
-    // Check for Android stylus or any other stylus
-    const isStylusTouch = nativeEvent.touchType === 'stylus';
-    
-    return isApplePencil || isStylusTouch;
+    return (nativeEvent.force !== undefined && nativeEvent.force > 0) || nativeEvent.touchType === 'stylus';
   };
 
+  console.log(isStylus);
+
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: (evt: GestureResponderEvent, _: PanResponderGestureState): boolean => {
-      return isStylus(evt);
-    },
-    onMoveShouldSetPanResponder: (evt: GestureResponderEvent, _: PanResponderGestureState): boolean => {
-      return isStylus(evt);
-    },
-    onPanResponderGrant: (evt: GestureResponderEvent) => {
+    onStartShouldSetPanResponder: (evt) => isStylus(evt),
+    onMoveShouldSetPanResponder: (evt) => isStylus(evt),
+    onPanResponderGrant: (evt) => {
       if (isStylus(evt)) {
         const { locationX, locationY } = evt.nativeEvent;
-        setCurrentPath([{ x: locationX, y: locationY }]);
+        setPaths((prevPaths) => [...prevPaths, [{ x: locationX, y: locationY }]]);
       }
     },
-    onPanResponderMove: (evt: GestureResponderEvent) => {
+    onPanResponderMove: (evt) => {
       if (isStylus(evt)) {
         const { locationX, locationY } = evt.nativeEvent;
-        const newPath = [...currentPath, { x: locationX, y: locationY }];
-        setCurrentPath(newPath);
-        drawPath(newPath);
+        setPaths((prevPaths) => {
+          const updatedPaths = [...prevPaths];
+          const lastPath = updatedPaths[updatedPaths.length - 1] || [];
+          lastPath.push({ x: locationX, y: locationY });
+          updatedPaths[updatedPaths.length - 1] = lastPath;
+          drawPath(lastPath);
+          return updatedPaths;
+        });
       }
     },
-    onPanResponderRelease: () => {
-      setCurrentPath([]);
-    },
+    onPanResponderRelease: () => {},
   });
 
   return (
@@ -101,11 +93,7 @@ const DrawingCanvas = () => {
             {COLORS.map((color) => (
               <TouchableOpacity
                 key={color}
-                style={[
-                  styles.colorButton,
-                  { backgroundColor: color },
-                  color === currentColor && styles.selectedOption,
-                ]}
+                style={[styles.colorButton, { backgroundColor: color }, color === currentColor && styles.selectedOption]}
                 onPress={() => setCurrentColor(color)}
               />
             ))}
@@ -117,10 +105,7 @@ const DrawingCanvas = () => {
             {STROKE_WIDTHS.map((width) => (
               <TouchableOpacity
                 key={width}
-                style={[
-                  styles.strokeButton,
-                  width === currentStrokeWidth && styles.selectedOption,
-                ]}
+                style={[styles.strokeButton, width === currentStrokeWidth && styles.selectedOption]}
                 onPress={() => setCurrentStrokeWidth(width)}
               >
                 <View style={[styles.strokeSample, { height: width }]} />
@@ -136,9 +121,8 @@ const DrawingCanvas = () => {
   );
 };
 
-export default function HomeScreen() {
-  return <DrawingCanvas />;
-}
+export default DrawingCanvas;
+
 
 const styles = StyleSheet.create({
   container: {
