@@ -7,6 +7,13 @@ interface Point {
   y: number;
 }
 
+interface StrokeData {
+  points: Point[];
+  color: string;
+  strokeWidth: number;
+  timestamp: number;
+}
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const COLORS = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFA500'];
@@ -15,12 +22,19 @@ const STROKE_WIDTHS = [2, 4, 6, 8, 10];
 const DrawingCanvas = () => {
   const canvasRef = useRef<Canvas | null>(null);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  const pathsRef = useRef<Point[][]>([]);
+  const pathsRef = useRef<StrokeData[]>([]);
   const currentPathRef = useRef<Point[]>([]);
   const [currentColor, setCurrentColor] = useState(COLORS[0]);
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(STROKE_WIDTHS[1]);
   const lastPointRef = useRef<Point | null>(null);
   const isDrawingRef = useRef(false);
+
+  const printStrokesData = useCallback(() => {
+    console.log('\n=== Canvas Strokes Data ===');
+    console.log(`Total number of strokes: ${pathsRef.current.length}`);
+    console.log('Strokes Data:', JSON.stringify(pathsRef.current, null, 2));
+    console.log('========================\n');
+  }, []);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -76,7 +90,14 @@ const DrawingCanvas = () => {
     },
     onPanResponderRelease: () => {
       if (currentPathRef.current.length > 0) {
-        pathsRef.current.push([...currentPathRef.current]);
+        const strokeData: StrokeData = {
+          points: [...currentPathRef.current],
+          color: currentColor,
+          strokeWidth: currentStrokeWidth,
+          timestamp: Date.now()
+        };
+        pathsRef.current.push(strokeData);
+        printStrokesData();
       }
       currentPathRef.current = [];
       lastPointRef.current = null;
@@ -84,7 +105,14 @@ const DrawingCanvas = () => {
     },
     onPanResponderTerminate: () => {
       if (currentPathRef.current.length > 0) {
-        pathsRef.current.push([...currentPathRef.current]);
+        const strokeData: StrokeData = {
+          points: [...currentPathRef.current],
+          color: currentColor,
+          strokeWidth: currentStrokeWidth,
+          timestamp: Date.now()
+        };
+        pathsRef.current.push(strokeData);
+        printStrokesData();
       }
       currentPathRef.current = [];
       lastPointRef.current = null;
