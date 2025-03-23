@@ -1,10 +1,17 @@
-import { View, TouchableOpacity, ScrollView, Text, Animated, Dimensions } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Text, Animated } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import DrawingCanvas from '../components/DrawingCanvas';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import MCQOptions from '../components/MCQOptions';
+import Sidebar from '../components/Sidebar';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef, useEffect } from 'react';
+
+interface Task {
+  id: string;
+  title: string;
+  status: 'completed' | 'current' | 'wrong' | 'upcoming';
+}
 
 export default function CanvasScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -12,8 +19,6 @@ export default function CanvasScreen() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const sidebarAnimation = useRef(new Animated.Value(-300)).current;
-  const { width: screenWidth } = Dimensions.get('window');
-  const sidebarWidth = screenWidth * 0.3;
   const allowMultiple = true;
 
   const markdownContent = `# Welcome to the Canvas
@@ -42,7 +47,7 @@ Feel free to edit this content with your own markdown!`;
   ];
 
   // Example tasks - replace with your actual tasks
-  const tasks = [
+  const tasks: Task[] = [
     { id: '1', title: 'Introduction to Drawing Basics', status: 'completed' },
     { id: '2', title: 'Understanding Lines and Strokes', status: 'completed' },
     { id: '3', title: 'Basic Shape Drawing', status: 'completed' },
@@ -77,7 +82,7 @@ Feel free to edit this content with your own markdown!`;
 
   useEffect(() => {
     Animated.timing(sidebarAnimation, {
-      toValue: isSidebarOpen ? 0 : -sidebarWidth,
+      toValue: isSidebarOpen ? 0 : -300,
       duration: 300,
       useNativeDriver: true,
     }).start();
@@ -86,13 +91,11 @@ Feel free to edit this content with your own markdown!`;
   const handleOptionSelect = (optionId: string) => {
     setSelectedOptions((prev) => {
       if (allowMultiple) {
-        // For multiple selection, toggle the option
         if (prev.includes(optionId)) {
           return prev.filter((id) => id !== optionId);
         }
         return [...prev, optionId];
       } else {
-        // For single selection, just set the selected option
         return [optionId];
       }
     });
@@ -100,7 +103,7 @@ Feel free to edit this content with your own markdown!`;
 
   const handleTaskSelect = (taskId: string) => {
     setSelectedTask(taskId);
-    setIsSidebarOpen(false); // Close sidebar when task is selected
+    setIsSidebarOpen(false);
   };
 
   return (
@@ -131,75 +134,15 @@ Feel free to edit this content with your own markdown!`;
         <Ionicons name="menu" size={18} color="white" />
       </TouchableOpacity>
 
-      {/* Overlay */}
-      {isSidebarOpen && (
-        <TouchableOpacity
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            zIndex: 35,
-          }}
-          onPress={() => setIsSidebarOpen(false)}
-          activeOpacity={1}
-        />
-      )}
-
-      {/* Sidebar */}
-      <Animated.View 
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: sidebarWidth,
-          backgroundColor: 'white',
-          transform: [{ translateX: sidebarAnimation }],
-          zIndex: 45,
-          shadowColor: '#000',
-          shadowOffset: {
-            width: 0,
-            height: 2,
-          },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: 5,
-        }}
-      >
-        <View className="p-4 border-b border-gray-200">
-          <Text className="text-xl font-bold text-gray-800">Tasks</Text>
-        </View>
-        <ScrollView className="flex-1">
-          {tasks.map((task) => (
-            <TouchableOpacity
-              key={task.id}
-              className={`p-4 border-b border-gray-100 ${
-                selectedTask === task.id ? 'bg-blue-50' : ''
-              }`}
-              onPress={() => handleTaskSelect(task.id)}
-            >
-              <View className="flex-row items-center">
-                <View className={`w-3 h-3 rounded-full mr-3 ${
-                  task.status === 'completed' ? 'bg-green-500' :
-                  task.status === 'current' ? 'bg-blue-500' :
-                  task.status === 'wrong' ? 'bg-red-500' :
-                  'bg-gray-300'
-                }`} />
-                <Text 
-                  className={`text-gray-800 ${
-                    task.status === 'completed' ? 'line-through text-gray-400' : ''
-                  }`}
-                >
-                  {task.title}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </Animated.View>
+      {/* Sidebar Component */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        tasks={tasks}
+        selectedTask={selectedTask}
+        onTaskSelect={handleTaskSelect}
+        sidebarAnimation={sidebarAnimation}
+      />
     </View>
   );
 } 
