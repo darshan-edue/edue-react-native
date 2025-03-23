@@ -3,7 +3,6 @@ import {
   Canvas,
   Path,
   Skia,
-  useCanvasRef,
 } from '@shopify/react-native-skia';
 import { useCallback, useRef, useState, useMemo, useEffect } from 'react';
 
