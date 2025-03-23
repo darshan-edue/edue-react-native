@@ -1,39 +1,42 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { useRouter, useSegments } from 'expo-router';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    const inAuthGroup = segments[0] === '(auth)';
+    const inCoursesGroup = segments[0] === 'courses';
+    const inCanvasGroup = segments[0] === 'canvas';
 
-  if (!loaded) {
-    return null;
-  }
+    // If we're not in any group and not on the login page, redirect to login
+    if (!inAuthGroup && !inCoursesGroup && !inCanvasGroup && segments[0] !== 'login') {
+      router.replace('/login');
+    }
+  }, [segments]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack>
+      <Stack.Screen
+        name="login"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="courses"
+        options={{
+          title: 'Available Courses',
+        }}
+      />
+      <Stack.Screen
+        name="canvas/[id]"
+        options={{
+          title: 'Drawing Canvas',
+        }}
+      />
+    </Stack>
   );
 }
