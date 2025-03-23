@@ -1,4 +1,4 @@
-import { StyleSheet, View, TouchableOpacity, Text, Dimensions, PanResponder } from 'react-native';
+import { View, TouchableOpacity, Text, Dimensions, PanResponder } from 'react-native';
 import {
   Canvas,
   Path,
@@ -130,37 +130,52 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
   }, [completedStrokes]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.controlPanel}>
-        <View style={styles.controlSection}>
-          <Text style={styles.controlTitle}>Colors</Text>
-          <View style={styles.colorOptions}>
+    <View className="flex-1 bg-gray-100">
+      <View className="p-4 bg-white border-b border-gray-200 flex-row justify-around">
+        <View className="items-center">
+          <Text className="text-sm mb-2 text-gray-600">Colors</Text>
+          <View className="flex-row gap-2">
             {COLORS.map((color) => (
               <TouchableOpacity
                 key={color}
-                style={[styles.colorButton, { backgroundColor: color }, color === currentColor && styles.selectedOption]}
+                className={`w-[30px] h-[30px] rounded-full border ${
+                  color === currentColor ? 'border-blue-500 border-2' : 'border-gray-200'
+                }`}
+                style={{ backgroundColor: color }}
                 onPress={() => setCurrentColor(color)}
               />
             ))}
           </View>
         </View>
-        <View style={styles.controlSection}>
-          <Text style={styles.controlTitle}>Stroke Width</Text>
-          <View style={styles.strokeOptions}>
+        <View className="items-center">
+          <Text className="text-sm mb-2 text-gray-600">Stroke Width</Text>
+          <View className="flex-row gap-2 items-center">
             {STROKE_WIDTHS.map((width) => (
               <TouchableOpacity
                 key={width}
-                style={[styles.strokeButton, width === currentStrokeWidth && styles.selectedOption]}
+                className={`w-10 h-10 rounded bg-white border ${
+                  width === currentStrokeWidth ? 'border-blue-500 border-2' : 'border-gray-200'
+                } justify-center items-center`}
                 onPress={() => setCurrentStrokeWidth(width)}
               >
-                <View style={[styles.strokeSample, { height: width }]} />
+                <View 
+                  className="w-6 bg-black rounded-sm"
+                  style={{ height: width }}
+                />
               </TouchableOpacity>
             ))}
           </View>
         </View>
       </View>
-      <View style={styles.canvasContainer} {...panResponder.panHandlers}>
-        <Canvas style={styles.canvas}>
+      <View 
+        className="flex-1"
+        style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT - 100 }}
+        {...panResponder.panHandlers}
+      >
+        <Canvas 
+          className="flex-1"
+          style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT - 100 }}
+        >
           {paths}
           {currentPath.current && (
             <Path
@@ -177,77 +192,4 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
   );
 };
 
-export default DrawingCanvas;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  controlPanel: {
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  controlSection: {
-    alignItems: 'center',
-  },
-  controlTitle: {
-    fontSize: 14,
-    marginBottom: 8,
-    color: '#666',
-  },
-  colorOptions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  colorButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  strokeOptions: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-  },
-  strokeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  strokeSample: {
-    width: 24,
-    backgroundColor: '#000',
-    borderRadius: 2,
-  },
-  selectedOption: {
-    borderWidth: 2,
-    borderColor: '#007AFF',
-  },
-  versionText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#007AFF',
-  },
-  canvasContainer: {
-    flex: 1,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT - 100, // Adjust for control panel height
-  },
-  canvas: {
-    flex: 1,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT - 100, // Adjust for control panel height
-  },
-}); 
+export default DrawingCanvas; 
