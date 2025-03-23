@@ -145,10 +145,6 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
           </View>
         </View>
         <View style={styles.controlSection}>
-          <Text style={styles.controlTitle}>Course</Text>
-          <Text style={styles.versionText}>{courseId}</Text>
-        </View>
-        <View style={styles.controlSection}>
           <Text style={styles.controlTitle}>Stroke Width</Text>
           <View style={styles.strokeOptions}>
             {STROKE_WIDTHS.map((width) => (
