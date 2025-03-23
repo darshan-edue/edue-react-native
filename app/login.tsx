@@ -1,8 +1,12 @@
-import { StyleSheet, View, TouchableOpacity, Text, TextInput, Image, Dimensions } from 'react-native';
+import { View, TouchableOpacity, Text, TextInput, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { styled } from 'nativewind';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const StyledView = styled(View);
+const StyledText = styled(Text);
+const StyledTextInput = styled(TextInput);
+const StyledTouchableOpacity = styled(TouchableOpacity);
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -15,20 +19,24 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.contentContainer}>
+    <StyledView className="flex-1 bg-white justify-center items-center">
+      <StyledView className="w-[85%] max-w-[600px] items-center">
         <Image
           source={require('../assets/images/edue-logo.png')}
-          style={styles.logo}
+          className="w-4/5 h-[100px] mb-12"
           resizeMode="contain"
         />
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Login</Text>
+        <StyledView className="bg-[#F5F8FF] rounded-2xl p-10 w-full shadow-lg">
+          <StyledText className="text-3xl font-semibold text-black mb-9">
+            Login
+          </StyledText>
           
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
+          <StyledView className="mb-8">
+            <StyledText className="text-lg font-medium text-black mb-3">
+              Email
+            </StyledText>
+            <StyledTextInput
+              className="bg-white rounded-xl p-5 text-lg text-black border border-[#E5E5E5] h-16"
               placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
@@ -37,12 +45,14 @@ export default function LoginScreen() {
               autoComplete="email"
               placeholderTextColor="#A0A0A0"
             />
-          </View>
+          </StyledView>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
+          <StyledView className="mb-8">
+            <StyledText className="text-lg font-medium text-black mb-3">
+              Password
+            </StyledText>
+            <StyledTextInput
+              className="bg-white rounded-xl p-5 text-lg text-black border border-[#E5E5E5] h-16"
               placeholder="Enter your password"
               value={password}
               onChangeText={setPassword}
@@ -50,88 +60,18 @@ export default function LoginScreen() {
               autoCapitalize="none"
               placeholderTextColor="#A0A0A0"
             />
-          </View>
+          </StyledView>
 
-          <TouchableOpacity 
-            style={styles.loginButton} 
+          <StyledTouchableOpacity 
+            className="bg-[#0055FF] rounded-xl p-5 items-center mt-6 self-end min-w-[160px]"
             onPress={handleLogin}
           >
-            <Text style={styles.loginButtonText}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+            <StyledText className="text-white text-lg font-semibold">
+              Login
+            </StyledText>
+          </StyledTouchableOpacity>
+        </StyledView>
+      </StyledView>
+    </StyledView>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  contentContainer: {
-    width: SCREEN_WIDTH * 0.85,
-    maxWidth: 600,
-    alignItems: 'center',
-  },
-  logo: {
-    width: '80%',
-    height: 100,
-    marginBottom: 48,
-  },
-  formContainer: {
-    backgroundColor: '#F5F8FF',
-    borderRadius: 16,
-    padding: 40,
-    width: '100%',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 36,
-  },
-  inputGroup: {
-    marginBottom: 32,
-  },
-  label: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#000000',
-    marginBottom: 12,
-  },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    fontSize: 18,
-    color: '#000000',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    height: 64,
-  },
-  loginButton: {
-    backgroundColor: '#0055FF',
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-    marginTop: 24,
-    alignSelf: 'flex-end',
-    minWidth: 160,
-  },
-  loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-}); 
+} 

@@ -1,5 +1,6 @@
-import { StyleSheet, View, TouchableOpacity, Text, FlatList, Image, useWindowDimensions } from 'react-native';
+import { View, TouchableOpacity, Text, FlatList, Image, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useState, useEffect } from 'react';
 
 interface Worksheet {
   id: string;
@@ -42,39 +43,54 @@ const WORKSHEETS: Worksheet[] = [
 
 export default function WorksheetsScreen() {
   const router = useRouter();
-  const { width: SCREEN_WIDTH } = useWindowDimensions();
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
+  const [numColumns, setNumColumns] = useState(1);
   
-  // Calculate number of columns based on screen width
   const getNumColumns = () => {
+    const isLandscape = SCREEN_WIDTH > SCREEN_HEIGHT;
+    
+    if (isLandscape) {
+      if (SCREEN_WIDTH < 800) return 2;
+      if (SCREEN_WIDTH < 1200) return 3;
+      return 4;
+    }
+    
+    // Portrait mode
     if (SCREEN_WIDTH < 600) return 1;
     if (SCREEN_WIDTH < 900) return 2;
     return 3;
   };
 
-  const NUM_COLUMNS = getNumColumns();
+  useEffect(() => {
+    setNumColumns(getNumColumns());
+  }, [SCREEN_WIDTH, SCREEN_HEIGHT]);
 
   const handleWorksheetPress = (worksheetId: string) => {
-    router.push('/canvas/id' as any);
+    router.push(`/canvas/${worksheetId}`);
   };
 
   const renderWorksheetItem = ({ item }: { item: Worksheet }) => (
-    <View style={[styles.cardContainer, { flex: 1/NUM_COLUMNS }]}>
+    <View style={{ width: `${100 / numColumns}%`, padding: 8 }}>
       <TouchableOpacity 
-        style={styles.worksheetCard}
+        className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden h-full"
         onPress={() => handleWorksheetPress(item.id)}
       >
-        <View style={styles.worksheetInfo}>
-          <View style={styles.worksheetContent}>
-            <Text style={styles.worksheetTitle} numberOfLines={2}>{item.title}</Text>
-            <Text style={styles.worksheetDescription} numberOfLines={4}>{item.description}</Text>
-            <View style={styles.metaContainer}>
-              <Text style={styles.metaText}>{item.level} · {item.duration}</Text>
+        <View className="p-4 flex-1 flex flex-col justify-between min-h-[180px]">
+          <View className="flex-1">
+            <Text className="text-base font-semibold mb-2 text-gray-800 leading-5" numberOfLines={1}>{item.title}</Text>
+            <Text className="text-sm text-gray-600 mb-3 leading-5" numberOfLines={2}>{item.description}</Text>
+            <View className="flex-row items-center mb-3">
+              <Text className="text-xs text-gray-600">{item.level} · {item.duration}</Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={styles.startButton}
+          <TouchableOpacity 
+            className="bg-blue-600 rounded-lg py-2.5 items-center"
+            onPress={(e) => {
+              e.stopPropagation();
+              handleWorksheetPress(item.id);
+            }}
           >
-            <Text style={styles.startButtonText}>Start Worksheet</Text>
+            <Text className="text-white text-xs font-semibold">Start Worksheet</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -82,191 +98,56 @@ export default function WorksheetsScreen() {
   );
 
   const renderContent = () => {
-    if (NUM_COLUMNS === 1) {
-      return (
-        <FlatList
-          data={WORKSHEETS}
-          renderItem={renderWorksheetItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-        />
-      );
-    }
-
     return (
       <FlatList
+        key={`list-${numColumns}`}
         data={WORKSHEETS}
         renderItem={renderWorksheetItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-        numColumns={NUM_COLUMNS}
-        columnWrapperStyle={styles.row}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        numColumns={numColumns}
+        columnWrapperStyle={numColumns > 1 ? { 
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          marginHorizontal: -8,
+          width: '100%'
+        } : undefined}
       />
     );
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Worksheets</Text>
+    <View className="flex-1 bg-white p-6">
+      <Text className="text-3xl font-bold mb-6 text-gray-800">Worksheets</Text>
       {renderContent()}
-      <View style={styles.bottomNavContainer}>
-        <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navItem}>
+      <View className="absolute bottom-0 left-0 right-0 h-20 bg-transparent items-center px-6 pb-4">
+        <View className="flex-row bg-white rounded-full p-2 w-full max-w-[400px] justify-around items-center shadow-lg">
+          <TouchableOpacity className="items-center justify-center w-12 h-12 rounded-full">
             <Image 
               source={require('../assets/images/home.png')} 
-              style={[styles.navIcon, styles.navIconActive]} 
+              className="w-6 h-6 tint-blue-600"
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem}>
+          <TouchableOpacity className="items-center justify-center w-12 h-12 rounded-full">
             <Image 
               source={require('../assets/images/bookmark.png')} 
-              style={styles.navIcon}
+              className="w-6 h-6 tint-gray-600"
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem}>
+          <TouchableOpacity className="items-center justify-center w-12 h-12 rounded-full">
             <Image 
               source={require('../assets/images/calendar.png')} 
-              style={styles.navIcon}
+              className="w-6 h-6 tint-gray-600"
             />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem}>
+          <TouchableOpacity className="items-center justify-center w-12 h-12 rounded-full">
             <Image 
               source={require('../assets/images/profile.png')} 
-              style={styles.navIcon}
+              className="w-6 h-6 tint-gray-600"
             />
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 24,
-  },
-  header: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#333',
-  },
-  listContainer: {
-    paddingBottom: 100,
-  },
-  row: {
-    flex: 1,
-    justifyContent: 'space-between',
-    marginHorizontal: -8, // Compensate for card container padding
-  },
-  cardContainer: {
-    padding: 8,
-  },
-  worksheetCard: {
-    flex: 1,
-    backgroundColor: 'white',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-    overflow: 'hidden',
-  },
-  worksheetInfo: {
-    padding: 16,
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    minHeight: 320,
-  },
-  worksheetContent: {
-    flex: 1,
-  },
-  worksheetTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
-    lineHeight: 24,
-  },
-  worksheetDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  metaContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  metaText: {
-    fontSize: 13,
-    color: '#666',
-  },
-  startButton: {
-    backgroundColor: '#2962FF',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-    marginTop: 'auto',
-  },
-  startButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  bottomNavContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 80,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 40,
-    padding: 8,
-    width: '100%',
-    maxWidth: 400,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  navItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  navIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#666',
-  },
-  navIconActive: {
-    tintColor: '#2962FF',
-  },
-}); 
+} 
