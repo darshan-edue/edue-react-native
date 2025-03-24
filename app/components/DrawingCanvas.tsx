@@ -5,6 +5,7 @@ import {
   Skia,
 } from '@shopify/react-native-skia';
 import { useCallback, useRef, useState, useMemo, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
 interface Point {
   x: number;
@@ -31,6 +32,8 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
   const [completedStrokes, setCompletedStrokes] = useState<StrokeData[]>([]);
   const [currentColor, setCurrentColor] = useState(COLORS[0]);
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(STROKE_WIDTHS[1]);
+  const [isEraserMode, setIsEraserMode] = useState(false);
+  const isEraserModeRef = useRef(isEraserMode);
   const currentPath = useRef<ReturnType<typeof Skia.Path.Make> | null>(null);
   const currentPoints = useRef<Point[]>([]);
   const isDrawing = useRef(false);
@@ -42,7 +45,8 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
   useEffect(() => {
     currentStrokeColor.current = currentColor;
     currentStrokeWidthRef.current = currentStrokeWidth;
-  }, [currentColor, currentStrokeWidth]);
+    isEraserModeRef.current = isEraserMode;
+  }, [currentColor, currentStrokeWidth, isEraserMode]);
 
   const printStrokesData = useCallback(() => {
     console.log('\n=== Canvas Strokes Data ===');
@@ -67,21 +71,54 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (evt) => {
         const { locationX, locationY } = evt.nativeEvent;
-        isDrawing.current = true;
-        currentPoints.current = [{ x: locationX, y: locationY }];
-        currentPath.current = Skia.Path.Make();
-        currentPath.current.moveTo(locationX, locationY);
-        setForceUpdate(prev => prev + 1);
+        const touchPoint = { x: locationX, y: locationY };
+        
+        if (isEraserModeRef.current) {
+          console.log('Eraser touch started at:', touchPoint);
+          // Find and remove strokes that are touched
+          setCompletedStrokes(prevStrokes => {
+            const newStrokes = prevStrokes.filter(stroke => {
+              const shouldRemove = isPointNearStroke(touchPoint, stroke);
+              if (shouldRemove) {
+                console.log('Removing stroke:', stroke);
+              }
+              return !shouldRemove;
+            });
+            return newStrokes;
+          });
+        } else {
+          isDrawing.current = true;
+          currentPoints.current = [{ x: locationX, y: locationY }];
+          currentPath.current = Skia.Path.Make();
+          currentPath.current.moveTo(locationX, locationY);
+          setForceUpdate(prev => prev + 1);
+        }
       },
       onPanResponderMove: (evt) => {
-        if (!isDrawing.current || !currentPath.current) return;
         const { locationX, locationY } = evt.nativeEvent;
-        currentPoints.current.push({ x: locationX, y: locationY });
-        currentPath.current.lineTo(locationX, locationY);
-        setForceUpdate(prev => prev + 1);
+        const touchPoint = { x: locationX, y: locationY };
+
+        if (isEraserModeRef.current) {
+          console.log('Eraser moving to:', touchPoint);
+          // Find and remove strokes that are touched
+          setCompletedStrokes(prevStrokes => {
+            const newStrokes = prevStrokes.filter(stroke => {
+              const shouldRemove = isPointNearStroke(touchPoint, stroke);
+              if (shouldRemove) {
+                console.log('Removing stroke:', stroke);
+              }
+              return !shouldRemove;
+            });
+            return newStrokes;
+          });
+        } else if (isDrawing.current && currentPath.current) {
+          currentPoints.current.push({ x: locationX, y: locationY });
+          currentPath.current.lineTo(locationX, locationY);
+          setForceUpdate(prev => prev + 1);
+        }
       },
       onPanResponderRelease: () => {
-        if (currentPoints.current.length > 0) {
+        if (!isEraserModeRef.current && currentPoints.current.length > 0) {
           const strokeData = createStrokeData(currentPoints.current);
           setCompletedStrokes(prev => [...prev, strokeData]);
           printStrokesData();
@@ -92,7 +129,7 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
         setForceUpdate(prev => prev + 1);
       },
       onPanResponderTerminate: () => {
-        if (currentPoints.current.length > 0) {
+        if (!isEraserModeRef.current && currentPoints.current.length > 0) {
           const strokeData = createStrokeData(currentPoints.current);
           setCompletedStrokes(prev => [...prev, strokeData]);
           printStrokesData();
@@ -104,6 +141,21 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
       },
     })
   ).current;
+
+  const isPointNearStroke = useCallback((point: Point, stroke: StrokeData) => {
+    const threshold = 20; // Adjust this value to change how close you need to be to erase
+    const isNear = stroke.points.some(strokePoint => {
+      const distance = Math.sqrt(
+        Math.pow(point.x - strokePoint.x, 2) + 
+        Math.pow(point.y - strokePoint.y, 2)
+      );
+      return distance < threshold;
+    });
+    if (isNear) {
+      console.log('Point is near stroke:', { point, stroke });
+    }
+    return isNear;
+  }, []);
 
   const paths = useMemo(() => {
     return completedStrokes.map((stroke, index) => {
@@ -138,7 +190,7 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
               <TouchableOpacity
                 key={color}
                 className={`w-[30px] h-[30px] rounded-full border ${
-                  color === currentColor ? 'border-blue-500 border-2' : 'border-gray-200'
+                  color === currentColor && !isEraserMode ? 'border-blue-500 border-2' : 'border-gray-200'
                 }`}
                 style={{ backgroundColor: color }}
                 onPress={() => setCurrentColor(color)}
@@ -153,7 +205,7 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
               <TouchableOpacity
                 key={width}
                 className={`w-10 h-10 rounded bg-white border ${
-                  width === currentStrokeWidth ? 'border-blue-500 border-2' : 'border-gray-200'
+                  width === currentStrokeWidth && !isEraserMode ? 'border-blue-500 border-2' : 'border-gray-200'
                 } justify-center items-center`}
                 onPress={() => setCurrentStrokeWidth(width)}
               >
@@ -164,6 +216,34 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
+        <View className="items-center">
+          <Text className="text-sm mb-2 text-gray-600">Eraser</Text>
+          <TouchableOpacity
+            className={`w-10 h-10 rounded bg-white border ${
+              isEraserMode ? 'border-blue-500 border-2' : 'border-gray-200'
+            } justify-center items-center`}
+            onPress={() => {
+              setIsEraserMode(prev => {
+                if (!prev) {
+                  // When turning eraser on, reset color and stroke width
+                  setCurrentColor(COLORS[0]);
+                  setCurrentStrokeWidth(STROKE_WIDTHS[0]);
+                } else {
+                  // When turning eraser off, reset to first color and stroke width
+                  setCurrentColor(COLORS[0]);
+                  setCurrentStrokeWidth(STROKE_WIDTHS[0]);
+                }
+                return !prev;
+              });
+            }}
+          >
+            <Ionicons 
+              name="backspace-outline" 
+              size={24} 
+              color={isEraserMode ? '#3b82f6' : '#6b7280'} 
+            />
+          </TouchableOpacity>
         </View>
       </View>
       <View 
@@ -176,7 +256,7 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
           style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT - 100 }}
         >
           {paths}
-          {currentPath.current && (
+          {currentPath.current && !isEraserModeRef.current && (
             <Path
               path={currentPath.current}
               strokeWidth={currentStrokeWidthRef.current}
