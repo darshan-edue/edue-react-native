@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { useRouter, useSegments } from 'expo-router';
+import { ApolloWrapper } from './providers/ApolloWrapper';
 
 export default function RootLayout() {
   const segments = useSegments();
@@ -18,25 +19,27 @@ export default function RootLayout() {
   }, [segments]);
 
   return (
-    <Stack>
-      <Stack.Screen
-        name="login"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="courses"
-        options={{
-          title: 'Available Courses',
-        }}
-      />
-      <Stack.Screen
-        name="canvas/[id]"
-        options={{
-          title: 'Drawing Canvas',
-        }}
-      />
-    </Stack>
+    <ApolloWrapper>
+      <Stack>
+        <Stack.Screen
+          name="login"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="courses"
+          options={{
+            title: 'Available Courses',
+          }}
+        />
+        <Stack.Screen
+          name="canvas/[id]"
+          options={{
+            title: 'Drawing Canvas',
+          }}
+        />
+      </Stack>
+    </ApolloWrapper>
   );
 }

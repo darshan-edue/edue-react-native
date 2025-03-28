@@ -2,20 +2,15 @@ import { View, TouchableOpacity, Text, TextInput, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { styled } from 'nativewind';
-import { ApolloClient, InMemoryCache, ApolloProvider, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { LOGIN } from './graphql/mutations/login';
-
-const client = new ApolloClient({
-  uri: 'https://adjusted-excited-satyr.ngrok-free.app/graphql/',
-  cache: new InMemoryCache(),
-});
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 
-function LoginForm() {
+export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -92,13 +87,5 @@ function LoginForm() {
         </StyledView>
       </StyledView>
     </StyledView>
-  );
-}
-
-export default function LoginScreen() {
-  return (
-    <ApolloProvider client={client}>
-      <LoginForm />
-    </ApolloProvider>
   );
 } 
