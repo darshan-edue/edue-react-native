@@ -3,20 +3,37 @@ import { useEffect } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { ApolloWrapper } from './providers/ApolloWrapper';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { startTokenRefresh } from './utils/tokenRefresh';
 
 export default function RootLayout() {
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    const inAuthGroup = segments[0] === '(auth)';
-    const inCoursesGroup = segments[0] === 'courses';
-    const inCanvasGroup = segments[0] === 'canvas';
+    const checkAuthAndRedirect = async () => {
+      const token = await AsyncStorage.getItem('userToken');
+      const inAuthGroup = segments[0] === '(auth)';
+      const inCoursesGroup = segments[0] === 'courses';
+      const inCanvasGroup = segments[0] === 'canvas';
 
-    // If we're not in any group and not on the login page, redirect to login
-    if (!inAuthGroup && !inCoursesGroup && !inCanvasGroup && segments[0] !== 'login') {
-      router.replace('/login');
-    }
+      if (token) {
+        // If we have a token, start refresh mechanism
+        await startTokenRefresh();
+        
+        // If we're not in a protected route, redirect to courses
+        if (!inCoursesGroup && !inCanvasGroup && segments[0] !== 'login') {
+          router.replace('/courses');
+        }
+      } else {
+        // If no token and not on login page, redirect to login
+        if (!inAuthGroup && segments[0] !== 'login') {
+          router.replace('/login');
+        }
+      }
+    };
+
+    checkAuthAndRedirect();
   }, [segments]);
 
   return (

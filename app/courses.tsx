@@ -1,6 +1,7 @@
-import { View, TouchableOpacity, Text, FlatList, Image, useWindowDimensions } from 'react-native';
+import { View, TouchableOpacity, Text, FlatList, Image, useWindowDimensions, Modal, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
+import { handleLogout } from './utils/tokenRefresh';
 
 interface Worksheet {
   id: string;
@@ -45,6 +46,7 @@ export default function WorksheetsScreen() {
   const router = useRouter();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   const [numColumns, setNumColumns] = useState(1);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   
   const getNumColumns = () => {
     const isLandscape = SCREEN_WIDTH > SCREEN_HEIGHT;
@@ -67,6 +69,15 @@ export default function WorksheetsScreen() {
 
   const handleWorksheetPress = (worksheetId: string) => {
     router.push(`/canvas/${worksheetId}`);
+  };
+
+  const handleLogoutPress = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutModal(false);
+    await handleLogout();
   };
 
   const renderWorksheetItem = ({ item }: { item: Worksheet }) => (
@@ -146,8 +157,56 @@ export default function WorksheetsScreen() {
               className="w-6 h-6 tint-gray-600"
             />
           </TouchableOpacity>
+          <TouchableOpacity 
+            className="items-center justify-center w-12 h-12 rounded-full"
+            onPress={handleLogoutPress}
+          >
+            <Image 
+              source={require('../assets/images/logout.png')} 
+              className="w-6 h-6 tint-red-600"
+            />
+          </TouchableOpacity>
         </View>
       </View>
+
+      <Modal
+        visible={showLogoutModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLogoutModal(false)}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-4">
+          <View className="bg-white rounded-[28px] w-full max-w-[327px]">
+            <View className="px-6 pt-8 pb-6 items-center">
+              <Text className="text-[22px] font-semibold text-black mb-2">
+                Logout
+              </Text>
+              <Text className="text-[17px] text-gray-600 text-center">
+                Are you sure you want to logout?
+              </Text>
+            </View>
+            
+            <View className="px-4 pb-4 space-y-2 flex w-full">
+              <TouchableOpacity 
+                className="w-full py-3 bg-red-600 rounded-lg items-center"
+                onPress={confirmLogout}
+              >
+                <Text className="text-[17px] font-medium text-white">
+                  Logout
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                className="w-full py-3 bg-gray-100 rounded-lg items-center"
+                onPress={() => setShowLogoutModal(false)}
+              >
+                <Text className="text-[17px] font-normal text-black">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 } 

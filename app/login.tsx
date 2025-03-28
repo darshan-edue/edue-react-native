@@ -5,6 +5,8 @@ import { styled } from 'nativewind';
 import { useMutation } from '@apollo/client';
 import { LOGIN } from './graphql/mutations/login';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { startTokenRefresh } from './utils/tokenRefresh';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -52,8 +54,19 @@ export default function LoginScreen() {
           }
         }
       });
-      console.log('Login successful! Token:', data.tokenAuth.token);
-      // Handle successful login here (e.g., store token, navigate to home)
+      
+      if (data?.tokenAuth?.token) {
+        // Store the token
+        await AsyncStorage.setItem('userToken', data.tokenAuth.token);
+        
+        // Start token refresh mechanism
+        await startTokenRefresh();
+        
+        // Redirect to courses page
+        router.replace('/courses');
+      } else {
+        throw new Error('No token received from server');
+      }
     } catch (error: any) {
       Toast.show({
         type: 'error',
