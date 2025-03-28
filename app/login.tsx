@@ -1,22 +1,48 @@
-import { View, TouchableOpacity, Text, TextInput, Image } from 'react-native';
+import { View, TouchableOpacity, Text, TextInput, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { styled } from 'nativewind';
 import { useMutation } from '@apollo/client';
 import { LOGIN } from './graphql/mutations/login';
+import Toast from 'react-native-toast-message';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledTextInput = styled(TextInput);
 const StyledTouchableOpacity = styled(TouchableOpacity);
 
+const isValidEmail = (email: string) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [login] = useMutation(LOGIN);
 
+  const validateEmail = (email: string) => {
+    if (!email) {
+      setEmailError('Email is required');
+      return false;
+    }
+    if (!isValidEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
   const handleLogin = async () => {
+    if (!validateEmail(email) || !password) {
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const { data } = await login({
         variables: {
@@ -27,10 +53,20 @@ export default function LoginScreen() {
         }
       });
       console.log('Login successful! Token:', data.tokenAuth.token);
-    } catch (error) {
-      console.error('Login failed:', error);
+      // Handle successful login here (e.g., store token, navigate to home)
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Login Failed',
+        text2: error.message || 'An error occurred during login',
+        position: 'bottom',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const isFormValid = email && password && !emailError;
 
   return (
     <StyledView className="flex-1 bg-white justify-center items-center">
@@ -50,15 +86,30 @@ export default function LoginScreen() {
               Email
             </StyledText>
             <StyledTextInput
-              className="bg-white rounded-xl p-5 text-lg text-black border border-[#E5E5E5] h-16"
+              className={`flex items-center h-16 bg-white rounded-xl px-4 text-black border ${
+                emailError ? 'border-red-500' : 'border-[#E5E5E5]'
+              }`}
               placeholder="Enter your email"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                validateEmail(text);
+              }}
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
               placeholderTextColor="#A0A0A0"
+              style={{
+                fontFamily: 'System',
+                fontSize: 16,
+                letterSpacing: 0.15,
+              }}
             />
+            {emailError ? (
+              <StyledText className="text-red-500 mt-1 text-sm">
+                {emailError}
+              </StyledText>
+            ) : null}
           </StyledView>
 
           <StyledView className="mb-8">
@@ -66,23 +117,36 @@ export default function LoginScreen() {
               Password
             </StyledText>
             <StyledTextInput
-              className="bg-white rounded-xl p-5 text-lg text-black border border-[#E5E5E5] h-16"
+              className="bg-white rounded-xl px-4 h-16 text-black border border-[#E5E5E5]"
               placeholder="Enter your password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               autoCapitalize="none"
               placeholderTextColor="#A0A0A0"
+              style={{
+                fontFamily: 'System',
+                fontSize: 16,
+                letterSpacing: 0.15,
+                textAlignVertical: 'center',
+              }}
             />
           </StyledView>
 
           <StyledTouchableOpacity 
-            className="bg-[#0055FF] rounded-xl p-5 items-center mt-6 self-end min-w-[160px]"
+            className={`rounded-xl p-5 items-center mt-6 self-end min-w-[160px] ${
+              isFormValid ? 'bg-[#0055FF]' : 'bg-gray-400'
+            }`}
             onPress={handleLogin}
+            disabled={!isFormValid || isLoading}
           >
-            <StyledText className="text-white text-lg font-semibold">
-              Login
-            </StyledText>
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <StyledText className="text-white text-lg font-semibold">
+                Login
+              </StyledText>
+            )}
           </StyledTouchableOpacity>
         </StyledView>
       </StyledView>

@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { ApolloWrapper } from './providers/ApolloWrapper';
+import Toast from 'react-native-toast-message';
 
 export default function RootLayout() {
   const segments = useSegments();
@@ -40,6 +41,7 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      <Toast />
     </ApolloWrapper>
   );
 }
