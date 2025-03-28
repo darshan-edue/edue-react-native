@@ -19,6 +19,7 @@ type Documents = {
     "\n  mutation Login($input: ObtainJSONWebTokenInput!) {\n    tokenAuth(input: $input) {\n      token\n    }\n  }\n": typeof types.LoginDocument,
     "\n  mutation RefreshToken($input: RefreshInput!) {\n    refreshToken(input: $input) {\n      token\n    }\n  }\n": typeof types.RefreshTokenDocument,
     "\n  \n  query GetMyAssignments($startTime: DateTime) {\n    myAssignments(startTime: $startTime) {\n      edges {\n        node {\n          id\n          assignment {\n            ...AssignmentFields\n          }\n          worksheet {\n            id\n            name\n            description\n          }\n          task {\n            id\n            name\n            content\n            isMcq\n          }\n          startTime\n          endTime\n        }\n      }\n    }\n  }\n": typeof types.GetMyAssignmentsDocument,
+    "\n  query GetWorksheets {\n    worksheets {\n      edges {\n        cursor\n        node {\n          id\n          name\n          description\n        }\n      }\n    }\n  }\n": typeof types.GetWorksheetsDocument,
 };
 const documents: Documents = {
     "\n  fragment AssignmentFields on WorksheetAssignmentNode {\n    id\n    worksheet {\n      id\n      name\n      description\n    }\n    dueDate\n    active\n    completed\n  }\n": types.AssignmentFieldsFragmentDoc,
@@ -26,6 +27,7 @@ const documents: Documents = {
     "\n  mutation Login($input: ObtainJSONWebTokenInput!) {\n    tokenAuth(input: $input) {\n      token\n    }\n  }\n": types.LoginDocument,
     "\n  mutation RefreshToken($input: RefreshInput!) {\n    refreshToken(input: $input) {\n      token\n    }\n  }\n": types.RefreshTokenDocument,
     "\n  \n  query GetMyAssignments($startTime: DateTime) {\n    myAssignments(startTime: $startTime) {\n      edges {\n        node {\n          id\n          assignment {\n            ...AssignmentFields\n          }\n          worksheet {\n            id\n            name\n            description\n          }\n          task {\n            id\n            name\n            content\n            isMcq\n          }\n          startTime\n          endTime\n        }\n      }\n    }\n  }\n": types.GetMyAssignmentsDocument,
+    "\n  query GetWorksheets {\n    worksheets {\n      edges {\n        cursor\n        node {\n          id\n          name\n          description\n        }\n      }\n    }\n  }\n": types.GetWorksheetsDocument,
 };
 
 /**
@@ -62,6 +64,10 @@ export function gql(source: "\n  mutation RefreshToken($input: RefreshInput!) {\
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  \n  query GetMyAssignments($startTime: DateTime) {\n    myAssignments(startTime: $startTime) {\n      edges {\n        node {\n          id\n          assignment {\n            ...AssignmentFields\n          }\n          worksheet {\n            id\n            name\n            description\n          }\n          task {\n            id\n            name\n            content\n            isMcq\n          }\n          startTime\n          endTime\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  \n  query GetMyAssignments($startTime: DateTime) {\n    myAssignments(startTime: $startTime) {\n      edges {\n        node {\n          id\n          assignment {\n            ...AssignmentFields\n          }\n          worksheet {\n            id\n            name\n            description\n          }\n          task {\n            id\n            name\n            content\n            isMcq\n          }\n          startTime\n          endTime\n        }\n      }\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  query GetWorksheets {\n    worksheets {\n      edges {\n        cursor\n        node {\n          id\n          name\n          description\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetWorksheets {\n    worksheets {\n      edges {\n        cursor\n        node {\n          id\n          name\n          description\n        }\n      }\n    }\n  }\n"];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};

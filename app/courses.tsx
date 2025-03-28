@@ -1,52 +1,44 @@
-import { View, TouchableOpacity, Text, FlatList, Image, useWindowDimensions, Modal, Alert } from 'react-native';
+import { View, TouchableOpacity, Text, FlatList, Image, useWindowDimensions, Modal, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { handleLogout } from './utils/tokenRefresh';
+import { useQuery } from '@apollo/client';
+import { GET_WORKSHEETS } from './graphql/queries/getWorksheets';
+import Toast from 'react-native-toast-message';
 
 interface Worksheet {
   id: string;
-  title: string;
+  name: string;
   description: string;
-  level: string;
-  duration: string;
 }
-
-const WORKSHEETS: Worksheet[] = [
-  { 
-    id: '1', 
-    title: 'Algebra Basics', 
-    description: 'Master fundamental algebraic concepts including variables, equations, and basic operations. Perfect for beginners starting their mathematical journey. Learn about linear equations, inequalities, and polynomial expressions. Practice solving real-world problems using algebraic methods.',
-    level: 'Beginner',
-    duration: '45 mins'
-  },
-  { 
-    id: '2', 
-    title: 'Geometry Fundamentals', 
-    description: 'Explore the world of shapes, angles, and spatial relationships. Learn about triangles, circles, and basic geometric principles. Understand the properties of different shapes and their applications in real-world scenarios. Master the concepts of area, perimeter, and volume calculations.',
-    level: 'Intermediate',
-    duration: '60 mins'
-  },
-  { 
-    id: '3', 
-    title: 'Statistics Introduction', 
-    description: 'Get started with data analysis, probability, and statistical concepts. Learn how to interpret and present data effectively. Understand mean, median, mode, and standard deviation. Practice creating and analyzing different types of graphs and charts.',
-    level: 'Beginner',
-    duration: '50 mins'
-  },
-  { 
-    id: '4', 
-    title: 'Calculus Basics', 
-    description: 'Introduction to limits, derivatives, and integrals. Understand the fundamental concepts of calculus with practical examples. Learn about rate of change, optimization problems, and area under curves. Master the techniques of differentiation and integration.',
-    level: 'Advanced',
-    duration: '75 mins'
-  },
-];
 
 export default function WorksheetsScreen() {
   const router = useRouter();
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   const [numColumns, setNumColumns] = useState(1);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  
+  const { loading, error, data } = useQuery(GET_WORKSHEETS);
+
+  useEffect(() => {
+    if (error) {
+      console.log('GraphQL Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to fetch worksheets. Please try again.',
+        position: 'bottom',
+      });
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (data) {
+      console.log('Raw API Response:', JSON.stringify(data, null, 2));
+      const worksheets = data?.worksheets?.edges?.map((edge: any) => edge.node) || [];
+      console.log('Transformed Worksheets:', JSON.stringify(worksheets, null, 2));
+    }
+  }, [data]);
   
   const getNumColumns = () => {
     const isLandscape = SCREEN_WIDTH > SCREEN_HEIGHT;
@@ -80,39 +72,71 @@ export default function WorksheetsScreen() {
     await handleLogout();
   };
 
-  const renderWorksheetItem = ({ item }: { item: Worksheet }) => (
-    <View style={{ width: `${100 / numColumns}%`, padding: 8 }}>
-      <TouchableOpacity 
-        className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden h-full"
-        onPress={() => handleWorksheetPress(item.id)}
-      >
-        <View className="p-4 flex-1 flex flex-col justify-between min-h-[180px]">
-          <View className="flex-1">
-            <Text className="text-base font-semibold mb-2 text-gray-800 leading-5" numberOfLines={1}>{item.title}</Text>
-            <Text className="text-sm text-gray-600 mb-3 leading-5" numberOfLines={2}>{item.description}</Text>
-            <View className="flex-row items-center mb-3">
-              <Text className="text-xs text-gray-600">{item.level} · {item.duration}</Text>
+  const renderWorksheetItem = ({ item }: { item: Worksheet }) => {
+    console.log('Rendering worksheet item:', item); // Debug log for each item
+    return (
+      <View style={{ width: `${100 / numColumns}%`, padding: 8 }}>
+        <TouchableOpacity 
+          className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden h-full"
+          onPress={() => handleWorksheetPress(item.id)}
+        >
+          <View className="p-4 flex-1 flex flex-col justify-between min-h-[180px]">
+            <View className="flex-1">
+              <Text className="text-base font-semibold mb-2 text-gray-800 leading-5" numberOfLines={1}>
+                {item.name || 'Untitled Worksheet'}
+              </Text>
+              <Text className="text-sm text-gray-600 mb-3 leading-5" numberOfLines={4}>
+                {item.description || 'No description available'}
+              </Text>
             </View>
+            <TouchableOpacity 
+              className="bg-blue-600 rounded-lg py-2.5 items-center"
+              onPress={(e) => {
+                e.stopPropagation();
+                handleWorksheetPress(item.id);
+              }}
+            >
+              <Text className="text-white text-xs font-semibold">Start Worksheet</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity 
-            className="bg-blue-600 rounded-lg py-2.5 items-center"
-            onPress={(e) => {
-              e.stopPropagation();
-              handleWorksheetPress(item.id);
-            }}
-          >
-            <Text className="text-white text-xs font-semibold">Start Worksheet</Text>
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text className="mt-4 text-gray-600">Loading worksheets...</Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-gray-600">Failed to load worksheets</Text>
+        </View>
+      );
+    }
+
+    const worksheets = data?.worksheets?.edges?.map((edge: any) => edge.node) || [];
+    console.log('Worksheets to render:', worksheets); // Debug log for the worksheets array
+
+    if (worksheets.length === 0) {
+      return (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-gray-600">No worksheets available</Text>
+        </View>
+      );
+    }
+
     return (
       <FlatList
         key={`list-${numColumns}`}
-        data={WORKSHEETS}
+        data={worksheets}
         renderItem={renderWorksheetItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 100 }}
