@@ -1,8 +1,9 @@
-import { View, TouchableOpacity, Text, Dimensions, PanResponder } from 'react-native';
+import { View, TouchableOpacity, Text, Dimensions, PanResponder, ScrollView } from 'react-native';
 import {
   Canvas,
   Path,
   Skia,
+  Line,
 } from '@shopify/react-native-skia';
 import { useCallback, useRef, useState, useMemo, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +22,10 @@ interface StrokeData {
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+const INITIAL_CANVAS_HEIGHT = SCREEN_HEIGHT * 2;
+const HEIGHT_INCREMENT = SCREEN_HEIGHT;
+const MAX_CANVAS_HEIGHT = SCREEN_HEIGHT * 3; // Maximum height to prevent memory issues
+const LOAD_MORE_THRESHOLD = 300; // pixels from bottom to trigger height increase
 const COLORS = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFA500'];
 const STROKE_WIDTHS = [2, 4, 6, 8, 10];
 
@@ -33,12 +38,16 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
   const [currentColor, setCurrentColor] = useState(COLORS[0]);
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(STROKE_WIDTHS[1]);
   const [isEraserMode, setIsEraserMode] = useState(false);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+  const [canvasHeight, setCanvasHeight] = useState(INITIAL_CANVAS_HEIGHT);
   const isEraserModeRef = useRef(isEraserMode);
   const currentPath = useRef<ReturnType<typeof Skia.Path.Make> | null>(null);
   const currentPoints = useRef<Point[]>([]);
   const isDrawing = useRef(false);
   const currentStrokeColor = useRef(currentColor);
   const currentStrokeWidthRef = useRef(currentStrokeWidth);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
   const [, setForceUpdate] = useState(0);
 
   // Update refs when state changes
@@ -67,53 +76,49 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: (evt) => {
+        // Enable drawing only for single touch
+        if (evt.nativeEvent.touches.length === 1) {
+          setScrollEnabled(false);
+          return true;
+        }
+        return false;
+      },
+      onMoveShouldSetPanResponder: (evt) => {
+        // Enable drawing only for single touch
+        return evt.nativeEvent.touches.length === 1;
+      },
       onPanResponderGrant: (evt) => {
         const { locationX, locationY } = evt.nativeEvent;
-        const touchPoint = { x: locationX, y: locationY };
+        const adjustedY = locationY + scrollOffset; // Adjust for scroll position
         
         if (isEraserModeRef.current) {
-          console.log('Eraser touch started at:', touchPoint);
-          // Find and remove strokes that are touched
           setCompletedStrokes(prevStrokes => {
-            const newStrokes = prevStrokes.filter(stroke => {
-              const shouldRemove = isPointNearStroke(touchPoint, stroke);
-              if (shouldRemove) {
-                console.log('Removing stroke:', stroke);
-              }
-              return !shouldRemove;
+            return prevStrokes.filter(stroke => {
+              return !isPointNearStroke({ x: locationX, y: adjustedY }, stroke);
             });
-            return newStrokes;
           });
         } else {
           isDrawing.current = true;
-          currentPoints.current = [{ x: locationX, y: locationY }];
+          currentPoints.current = [{ x: locationX, y: adjustedY }];
           currentPath.current = Skia.Path.Make();
-          currentPath.current.moveTo(locationX, locationY);
+          currentPath.current.moveTo(locationX, adjustedY);
           setForceUpdate(prev => prev + 1);
         }
       },
       onPanResponderMove: (evt) => {
         const { locationX, locationY } = evt.nativeEvent;
-        const touchPoint = { x: locationX, y: locationY };
+        const adjustedY = locationY + scrollOffset; // Adjust for scroll position
 
         if (isEraserModeRef.current) {
-          console.log('Eraser moving to:', touchPoint);
-          // Find and remove strokes that are touched
           setCompletedStrokes(prevStrokes => {
-            const newStrokes = prevStrokes.filter(stroke => {
-              const shouldRemove = isPointNearStroke(touchPoint, stroke);
-              if (shouldRemove) {
-                console.log('Removing stroke:', stroke);
-              }
-              return !shouldRemove;
+            return prevStrokes.filter(stroke => {
+              return !isPointNearStroke({ x: locationX, y: adjustedY }, stroke);
             });
-            return newStrokes;
           });
         } else if (isDrawing.current && currentPath.current) {
-          currentPoints.current.push({ x: locationX, y: locationY });
-          currentPath.current.lineTo(locationX, locationY);
+          currentPoints.current.push({ x: locationX, y: adjustedY });
+          currentPath.current.lineTo(locationX, adjustedY);
           setForceUpdate(prev => prev + 1);
         }
       },
@@ -126,6 +131,7 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
         currentPoints.current = [];
         currentPath.current = null;
         isDrawing.current = false;
+        setScrollEnabled(true);
         setForceUpdate(prev => prev + 1);
       },
       onPanResponderTerminate: () => {
@@ -137,6 +143,7 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
         currentPoints.current = [];
         currentPath.current = null;
         isDrawing.current = false;
+        setScrollEnabled(true);
         setForceUpdate(prev => prev + 1);
       },
     })
@@ -157,28 +164,74 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
     return isNear;
   }, []);
 
-  const paths = useMemo(() => {
-    return completedStrokes.map((stroke, index) => {
-      const path = Skia.Path.Make();
-      stroke.points.forEach((point, i) => {
-        if (i === 0) {
-          path.moveTo(point.x, point.y);
-        } else {
-          path.lineTo(point.x, point.y);
-        }
-      });
-      return (
-        <Path
-          key={index}
-          path={path}
-          strokeWidth={stroke.strokeWidth}
-          color={stroke.color}
-          style="stroke"
-          antiAlias
+  const handleScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    setScrollOffset(contentOffset.y);
+
+    // Check if we're near the bottom and haven't reached max height
+    const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
+    if (distanceFromBottom < LOAD_MORE_THRESHOLD && canvasHeight < MAX_CANVAS_HEIGHT) {
+      const newHeight = Math.min(canvasHeight + HEIGHT_INCREMENT, MAX_CANVAS_HEIGHT);
+      setCanvasHeight(newHeight);
+    }
+  };
+
+  const backgroundLines = useMemo(() => {
+    const lineSpacing = 30;
+    const lines = [];
+    const numLines = Math.floor(canvasHeight / lineSpacing);
+    const visibleStartLine = Math.max(0, Math.floor(scrollOffset / lineSpacing) - 5);
+    const visibleEndLine = Math.min(numLines, Math.ceil((scrollOffset + SCREEN_HEIGHT) / lineSpacing) + 5);
+    
+    // Only render lines that are visible or close to being visible
+    for (let i = visibleStartLine; i < visibleEndLine; i++) {
+      const y = i * lineSpacing;
+      lines.push(
+        <Line
+          key={`line-${i}`}
+          p1={{ x: 0, y }}
+          p2={{ x: SCREEN_WIDTH, y }}
+          color="#E5E7EB"
+          strokeWidth={1}
         />
       );
-    });
-  }, [completedStrokes]);
+    }
+    return lines;
+  }, [canvasHeight, scrollOffset]);
+
+  const paths = useMemo(() => {
+    // Calculate visible area with some padding
+    const visibleStart = scrollOffset - SCREEN_HEIGHT;
+    const visibleEnd = scrollOffset + SCREEN_HEIGHT * 2;
+
+    return completedStrokes
+      // Only render strokes that intersect with the visible area
+      .filter(stroke => {
+        const strokeMinY = Math.min(...stroke.points.map(p => p.y));
+        const strokeMaxY = Math.max(...stroke.points.map(p => p.y));
+        return strokeMaxY >= visibleStart && strokeMinY <= visibleEnd;
+      })
+      .map((stroke, index) => {
+        const path = Skia.Path.Make();
+        stroke.points.forEach((point, i) => {
+          if (i === 0) {
+            path.moveTo(point.x, point.y);
+          } else {
+            path.lineTo(point.x, point.y);
+          }
+        });
+        return (
+          <Path
+            key={index}
+            path={path}
+            strokeWidth={stroke.strokeWidth}
+            color={stroke.color}
+            style="stroke"
+            antiAlias
+          />
+        );
+      });
+  }, [completedStrokes, scrollOffset]);
 
   return (
     <View className="flex-1 bg-gray-100">
@@ -246,27 +299,35 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
           </TouchableOpacity>
         </View>
       </View>
-      <View 
-        className="flex-1"
-        style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT - 100 }}
-        {...panResponder.panHandlers}
+      <ScrollView
+        ref={scrollViewRef}
+        scrollEnabled={scrollEnabled}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={true}
+        showsHorizontalScrollIndicator={false}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ height: canvasHeight }}
       >
-        <Canvas 
-          className="flex-1"
-          style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT - 100 }}
+        <View 
+          style={{ width: SCREEN_WIDTH, height: canvasHeight }}
+          {...panResponder.panHandlers}
         >
-          {paths}
-          {currentPath.current && !isEraserModeRef.current && (
-            <Path
-              path={currentPath.current}
-              strokeWidth={currentStrokeWidthRef.current}
-              color={currentStrokeColor.current}
-              style="stroke"
-              antiAlias
-            />
-          )}
-        </Canvas>
-      </View>
+          <Canvas style={{ flex: 1 }}>
+            {backgroundLines}
+            {paths}
+            {currentPath.current && !isEraserModeRef.current && (
+              <Path
+                path={currentPath.current}
+                strokeWidth={currentStrokeWidthRef.current}
+                color={currentStrokeColor.current}
+                style="stroke"
+                antiAlias
+              />
+            )}
+          </Canvas>
+        </View>
+      </ScrollView>
     </View>
   );
 };

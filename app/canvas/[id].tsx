@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, ScrollView, Text, Animated } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Text, Animated, TouchableWithoutFeedback } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import DrawingCanvas from '../components/DrawingCanvas';
 import MarkdownRenderer from '../components/MarkdownRenderer';
@@ -18,7 +18,7 @@ export default function CanvasScreen() {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
-  const sidebarAnimation = useRef(new Animated.Value(-300)).current;
+  const sidebarAnimation = useRef(new Animated.Value(-350)).current;
   const allowMultiple = true;
 
   const markdownContent = `# Welcome to the Canvas
@@ -82,7 +82,7 @@ Feel free to edit this content with your own markdown!`;
 
   useEffect(() => {
     Animated.timing(sidebarAnimation, {
-      toValue: isSidebarOpen ? 0 : -300,
+      toValue: isSidebarOpen ? 0 : -350,
       duration: 300,
       useNativeDriver: true,
     }).start();
@@ -126,6 +126,23 @@ Feel free to edit this content with your own markdown!`;
         </View>
       </View>
 
+      {/* Overlay for closing sidebar when clicking outside */}
+      {isSidebarOpen && (
+        <TouchableWithoutFeedback onPress={() => setIsSidebarOpen(false)}>
+          <View 
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.3)',
+              zIndex: 45,
+            }}
+          />
+        </TouchableWithoutFeedback>
+      )}
+
       {/* Menu Button */}
       <TouchableOpacity 
         className="absolute top-5 left-4 z-40 p-2 bg-black rounded-full"
@@ -135,14 +152,34 @@ Feel free to edit this content with your own markdown!`;
       </TouchableOpacity>
 
       {/* Sidebar Component */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        tasks={tasks}
-        selectedTask={selectedTask}
-        onTaskSelect={handleTaskSelect}
-        sidebarAnimation={sidebarAnimation}
-      />
+      <Animated.View 
+        style={[
+          {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            width: 300,
+            backgroundColor: 'white',
+            transform: [{ translateX: sidebarAnimation }],
+            zIndex: 50,
+            elevation: 5,
+            shadowColor: '#000',
+            shadowOffset: { width: 2, height: 0 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          },
+        ]}
+      >
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          tasks={tasks}
+          selectedTask={selectedTask}
+          onTaskSelect={handleTaskSelect}
+          sidebarAnimation={sidebarAnimation}
+        />
+      </Animated.View>
     </View>
   );
 } 
