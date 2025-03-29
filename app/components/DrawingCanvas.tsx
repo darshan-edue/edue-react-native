@@ -246,7 +246,10 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
                   color === currentColor && !isEraserMode ? 'border-blue-500 border-2' : 'border-gray-200'
                 }`}
                 style={{ backgroundColor: color }}
-                onPress={() => setCurrentColor(color)}
+                onPress={() => {
+                  setIsEraserMode(false);
+                  setCurrentColor(color);
+                }}
               />
             ))}
           </View>
@@ -260,7 +263,10 @@ const DrawingCanvas = ({ courseId }: DrawingCanvasProps) => {
                 className={`w-10 h-10 rounded bg-white border ${
                   width === currentStrokeWidth && !isEraserMode ? 'border-blue-500 border-2' : 'border-gray-200'
                 } justify-center items-center`}
-                onPress={() => setCurrentStrokeWidth(width)}
+                onPress={() => {
+                  setIsEraserMode(false);
+                  setCurrentStrokeWidth(width);
+                }}
               >
                 <View 
                   className="w-6 bg-black rounded-sm"
