@@ -5,6 +5,10 @@ import { router } from 'expo-router';
 
 let refreshInterval: NodeJS.Timeout | null = null;
 
+export const getToken = async (): Promise<string | null> => {
+  return await AsyncStorage.getItem('userToken');
+};
+
 export const startTokenRefresh = async () => {
   // Clear any existing interval
   if (refreshInterval) {

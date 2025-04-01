@@ -16,6 +16,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 type Documents = {
     "\n  fragment AssignmentFields on WorksheetAssignmentNode {\n    id\n    worksheet {\n      id\n      name\n      description\n    }\n    dueDate\n    active\n    completed\n  }\n": typeof types.AssignmentFieldsFragmentDoc,
     "\n  fragment TextMessageFields on TextMessageNode {\n    id\n    message\n    timestamp\n    byStudent\n    task {\n      id\n      assignment {\n        id\n      }\n    }\n  }\n": typeof types.TextMessageFieldsFragmentDoc,
+    "\n  mutation CreateStudySession($sessionId: String!) {\n    createStudySession(input: {sessionId: $sessionId}) {\n      studySession {\n        sessionId\n      }\n    }\n  }\n": typeof types.CreateStudySessionDocument,
     "\n  mutation Login($input: ObtainJSONWebTokenInput!) {\n    tokenAuth(input: $input) {\n      token\n    }\n  }\n": typeof types.LoginDocument,
     "\n  mutation RefreshToken($input: RefreshInput!) {\n    refreshToken(input: $input) {\n      token\n    }\n  }\n": typeof types.RefreshTokenDocument,
     "\n  \n  query GetMyAssignments($startTime: DateTime) {\n    myAssignments(startTime: $startTime) {\n      edges {\n        node {\n          id\n          assignment {\n            ...AssignmentFields\n          }\n          worksheet {\n            id\n            name\n            description\n          }\n          task {\n            id\n            name\n            content\n            isMcq\n          }\n          startTime\n          endTime\n        }\n      }\n    }\n  }\n": typeof types.GetMyAssignmentsDocument,
@@ -24,6 +25,7 @@ type Documents = {
 const documents: Documents = {
     "\n  fragment AssignmentFields on WorksheetAssignmentNode {\n    id\n    worksheet {\n      id\n      name\n      description\n    }\n    dueDate\n    active\n    completed\n  }\n": types.AssignmentFieldsFragmentDoc,
     "\n  fragment TextMessageFields on TextMessageNode {\n    id\n    message\n    timestamp\n    byStudent\n    task {\n      id\n      assignment {\n        id\n      }\n    }\n  }\n": types.TextMessageFieldsFragmentDoc,
+    "\n  mutation CreateStudySession($sessionId: String!) {\n    createStudySession(input: {sessionId: $sessionId}) {\n      studySession {\n        sessionId\n      }\n    }\n  }\n": types.CreateStudySessionDocument,
     "\n  mutation Login($input: ObtainJSONWebTokenInput!) {\n    tokenAuth(input: $input) {\n      token\n    }\n  }\n": types.LoginDocument,
     "\n  mutation RefreshToken($input: RefreshInput!) {\n    refreshToken(input: $input) {\n      token\n    }\n  }\n": types.RefreshTokenDocument,
     "\n  \n  query GetMyAssignments($startTime: DateTime) {\n    myAssignments(startTime: $startTime) {\n      edges {\n        node {\n          id\n          assignment {\n            ...AssignmentFields\n          }\n          worksheet {\n            id\n            name\n            description\n          }\n          task {\n            id\n            name\n            content\n            isMcq\n          }\n          startTime\n          endTime\n        }\n      }\n    }\n  }\n": types.GetMyAssignmentsDocument,
@@ -52,6 +54,10 @@ export function gql(source: "\n  fragment AssignmentFields on WorksheetAssignmen
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  fragment TextMessageFields on TextMessageNode {\n    id\n    message\n    timestamp\n    byStudent\n    task {\n      id\n      assignment {\n        id\n      }\n    }\n  }\n"): (typeof documents)["\n  fragment TextMessageFields on TextMessageNode {\n    id\n    message\n    timestamp\n    byStudent\n    task {\n      id\n      assignment {\n        id\n      }\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation CreateStudySession($sessionId: String!) {\n    createStudySession(input: {sessionId: $sessionId}) {\n      studySession {\n        sessionId\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation CreateStudySession($sessionId: String!) {\n    createStudySession(input: {sessionId: $sessionId}) {\n      studySession {\n        sessionId\n      }\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

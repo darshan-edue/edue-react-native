@@ -2,8 +2,10 @@ import { View, TouchableOpacity, Text, FlatList, Image, useWindowDimensions, Mod
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { handleLogout } from './utils/tokenRefresh';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { GET_WORKSHEETS } from './graphql/queries/getWorksheets';
+import { CREATE_STUDY_SESSION } from './graphql/mutations/createStudySession';
+import { connectToSession } from './utils/websocket';
 import Toast from 'react-native-toast-message';
 
 interface Worksheet {
@@ -17,8 +19,10 @@ export default function WorksheetsScreen() {
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   const [numColumns, setNumColumns] = useState(1);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loadingWorksheetId, setLoadingWorksheetId] = useState<string | null>(null);
   
   const { loading, error, data } = useQuery(GET_WORKSHEETS);
+  const [createStudySession] = useMutation(CREATE_STUDY_SESSION);
 
   useEffect(() => {
     if (error) {
@@ -59,8 +63,36 @@ export default function WorksheetsScreen() {
     setNumColumns(getNumColumns());
   }, [SCREEN_WIDTH, SCREEN_HEIGHT]);
 
-  const handleWorksheetPress = (worksheetId: string) => {
-    router.push(`/canvas/${worksheetId}`);
+  const handleWorksheetPress = async (worksheetId: string) => {
+    try {
+      setLoadingWorksheetId(worksheetId);
+      
+      // Create study session
+      const { data: sessionData } = await createStudySession({
+        variables: {
+          sessionId: worksheetId
+        }
+      });
+      
+      const sessionId = sessionData.createStudySession.studySession.sessionId;
+      console.log('Created study session:', sessionId);
+      
+      // Connect to WebSocket
+      await connectToSession(sessionId);
+      
+      // Navigate to the next page with the session ID
+      router.push(`/canvas/${worksheetId}`);
+    } catch (error) {
+      console.error('Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to start worksheet. Please try again.',
+        position: 'bottom',
+      });
+    } finally {
+      setLoadingWorksheetId(null);
+    }
   };
 
   const handleLogoutPress = () => {
@@ -73,12 +105,14 @@ export default function WorksheetsScreen() {
   };
 
   const renderWorksheetItem = ({ item }: { item: Worksheet }) => {
-    console.log('Rendering worksheet item:', item); // Debug log for each item
+    const isLoading = loadingWorksheetId === item.id;
+    
     return (
       <View style={{ width: `${100 / numColumns}%`, padding: 8 }}>
         <TouchableOpacity 
           className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden h-full"
-          onPress={() => handleWorksheetPress(item.id)}
+          onPress={() => !isLoading && handleWorksheetPress(item.id)}
+          disabled={isLoading}
         >
           <View className="p-4 flex-1 flex flex-col justify-between min-h-[180px]">
             <View className="flex-1">
@@ -90,13 +124,20 @@ export default function WorksheetsScreen() {
               </Text>
             </View>
             <TouchableOpacity 
-              className="bg-blue-600 rounded-lg py-2.5 items-center"
+              className={`${isLoading ? 'bg-blue-400' : 'bg-blue-600'} rounded-lg py-2.5 items-center`}
               onPress={(e) => {
                 e.stopPropagation();
-                handleWorksheetPress(item.id);
+                if (!isLoading) {
+                  handleWorksheetPress(item.id);
+                }
               }}
+              disabled={isLoading}
             >
-              <Text className="text-white text-xs font-semibold">Start Worksheet</Text>
+              {isLoading ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <Text className="text-white text-xs font-semibold">Start Worksheet</Text>
+              )}
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -123,7 +164,6 @@ export default function WorksheetsScreen() {
     }
 
     const worksheets = data?.worksheets?.edges?.map((edge: any) => edge.node) || [];
-    console.log('Worksheets to render:', worksheets); // Debug log for the worksheets array
 
     if (worksheets.length === 0) {
       return (
