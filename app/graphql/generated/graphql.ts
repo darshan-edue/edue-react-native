@@ -46,8 +46,8 @@ export type Scalars = {
   Upload: { input: any; output: any; }
 };
 
-export type AnswerLog = Node & {
-  __typename?: 'AnswerLog';
+export type AnswerLogNode = Node & {
+  __typename?: 'AnswerLogNode';
   attemptlogSet: AttemptLogNodeConnection;
   content: CanvasStrokeNodeConnection;
   createdAt: Scalars['DateTime']['output'];
@@ -57,7 +57,7 @@ export type AnswerLog = Node & {
 };
 
 
-export type AnswerLogAttemptlogSetArgs = {
+export type AnswerLogNodeAttemptlogSetArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -66,7 +66,7 @@ export type AnswerLogAttemptlogSetArgs = {
 };
 
 
-export type AnswerLogContentArgs = {
+export type AnswerLogNodeContentArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -75,7 +75,7 @@ export type AnswerLogContentArgs = {
 };
 
 
-export type AnswerLogMcqOptionsArgs = {
+export type AnswerLogNodeMcqOptionsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -122,7 +122,7 @@ export type AnswerNodeEdge = {
 
 export type AttemptLogNode = Node & {
   __typename?: 'AttemptLogNode';
-  answer?: Maybe<AnswerLog>;
+  answer?: Maybe<AnswerLogNode>;
   assignment?: Maybe<WorksheetAssignmentNode>;
   /** The ID of the object */
   id: Scalars['ID']['output'];
@@ -154,6 +154,7 @@ export type CanvasStrokeNode = Node & {
   /** The ID of the object */
   id: Scalars['ID']['output'];
   stroke?: Maybe<Scalars['String']['output']>;
+  task?: Maybe<CourseLogNode>;
 };
 
 export type CanvasStrokeNodeConnection = {
@@ -173,14 +174,11 @@ export type CanvasStrokeNodeEdge = {
   node?: Maybe<CanvasStrokeNode>;
 };
 
-export type ChatNode = Node & {
-  __typename?: 'ChatNode';
-  byStudent: Scalars['Boolean']['output'];
-  /** The ID of the object */
+export type ChatInterface = {
+  byStudent?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   task?: Maybe<CourseLogNode>;
-  textmessage?: Maybe<TextMessageNode>;
-  timestamp: Scalars['DateTime']['output'];
+  timestamp?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type CheckAnswerMutation = {
@@ -285,6 +283,16 @@ export type CreateAttemptLogInput = {
   answer?: InputMaybe<CreateAnswerLogInput>;
   assignment: Scalars['ID']['input'];
   taskLog: Scalars['ID']['input'];
+};
+
+export type CreateCanvasStrokeInput = {
+  stroke: Scalars['String']['input'];
+  task: Scalars['ID']['input'];
+};
+
+export type CreateCanvasStrokeMutation = {
+  __typename?: 'CreateCanvasStrokeMutation';
+  canvasStroke?: Maybe<CanvasStrokeNode>;
 };
 
 export type CreateDumpLogInput = {
@@ -511,6 +519,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   checkStudentAnswer?: Maybe<CheckAnswerMutation>;
   createAnswer?: Maybe<CreateAnswerMutation>;
+  createCanvasStroke?: Maybe<CreateCanvasStrokeMutation>;
   createDumplog?: Maybe<CreateDumpLogMutation>;
   createMcqOptions?: Maybe<CreateMcqOptionsMutation>;
   createStreamKey?: Maybe<CreateStreamKeyMutation>;
@@ -527,6 +536,7 @@ export type Mutation = {
   otpVerification?: Maybe<UserOtpVerification>;
   refreshToken?: Maybe<RefreshPayload>;
   registration?: Maybe<UserRegistartion>;
+  removeCanvasStroke?: Maybe<RemoveCanvasStrokeMutation>;
   sendOtp?: Maybe<UserSendOtp>;
   /** Obtain JSON Web Token mutation */
   tokenAuth?: Maybe<ObtainJsonWebTokenPayload>;
@@ -547,6 +557,11 @@ export type MutationCheckStudentAnswerArgs = {
 
 export type MutationCreateAnswerArgs = {
   input: CreateAnswerInput;
+};
+
+
+export type MutationCreateCanvasStrokeArgs = {
+  input: CreateCanvasStrokeInput;
 };
 
 
@@ -627,6 +642,11 @@ export type MutationRefreshTokenArgs = {
 
 export type MutationRegistrationArgs = {
   input: CreateUserInput;
+};
+
+
+export type MutationRemoveCanvasStrokeArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -721,11 +741,12 @@ export type Query = {
   courses?: Maybe<CourseNodeConnection>;
   currentTask?: Maybe<CourseLogNode>;
   enrollments?: Maybe<EnrollmentNodeConnection>;
+  getLog?: Maybe<CourseLogNode>;
   me?: Maybe<UserType>;
-  messages?: Maybe<TextMessageNodeConnection>;
   myAssignments?: Maybe<CourseLogNodeConnection>;
   taskAnswers?: Maybe<AnswerNodeConnection>;
   taskMcqoptions?: Maybe<McqOptionsNodeConnection>;
+  taskStrokes?: Maybe<CanvasStrokeNodeConnection>;
   worksheet?: Maybe<WorksheetNode>;
   worksheets?: Maybe<WorksheetNodeConnection>;
 };
@@ -780,14 +801,8 @@ export type QueryEnrollmentsArgs = {
 };
 
 
-export type QueryMessagesArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  byStudent?: InputMaybe<Scalars['Boolean']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  task?: InputMaybe<Scalars['ID']['input']>;
+export type QueryGetLogArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -797,7 +812,9 @@ export type QueryMyAssignmentsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
+  parent?: InputMaybe<Scalars['ID']['input']>;
   startTime?: InputMaybe<Scalars['DateTime']['input']>;
+  taskIsEmpty?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -814,6 +831,17 @@ export type QueryTaskAnswersArgs = {
 export type QueryTaskMcqoptionsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  last?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  task?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type QueryTaskStrokesArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -846,6 +874,14 @@ export type RefreshPayload = {
   payload: Scalars['GenericScalar']['output'];
   refreshExpiresIn: Scalars['Int']['output'];
   token: Scalars['String']['output'];
+};
+
+export type RemoveCanvasStrokeMutation = {
+  __typename?: 'RemoveCanvasStrokeMutation';
+  deletedId?: Maybe<Scalars['ID']['output']>;
+  deletedInputId?: Maybe<Scalars['ID']['output']>;
+  deletedRawId?: Maybe<Scalars['ID']['output']>;
+  found?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type SendOtpInput = {
@@ -988,33 +1024,14 @@ export type TaskNodeEdge = {
   node?: Maybe<TaskNode>;
 };
 
-export type TextMessageNode = Node & {
+export type TextMessageNode = ChatInterface & Node & {
   __typename?: 'TextMessageNode';
-  byStudent: Scalars['Boolean']['output'];
-  chatPtr: ChatNode;
-  /** The ID of the object */
+  byStudent?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   message?: Maybe<Scalars['String']['output']>;
   task?: Maybe<CourseLogNode>;
   textmessage?: Maybe<TextMessageNode>;
-  timestamp: Scalars['DateTime']['output'];
-};
-
-export type TextMessageNodeConnection = {
-  __typename?: 'TextMessageNodeConnection';
-  /** Contains the nodes in this connection. */
-  edges: Array<Maybe<TextMessageNodeEdge>>;
-  /** Pagination data for this connection. */
-  pageInfo: PageInfo;
-};
-
-/** A Relay edge containing a `TextMessageNode` and its cursor. */
-export type TextMessageNodeEdge = {
-  __typename?: 'TextMessageNodeEdge';
-  /** A cursor for use in pagination */
-  cursor: Scalars['String']['output'];
-  /** The item at the end of the edge */
-  node?: Maybe<TextMessageNode>;
+  timestamp?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type UpdateAnswerInput = {
@@ -1219,7 +1236,7 @@ export type WorksheetNodeEdge = {
 
 export type AssignmentFieldsFragment = { __typename?: 'WorksheetAssignmentNode', id: string, dueDate?: string | null, active: boolean, completed: boolean, worksheet?: { __typename?: 'WorksheetNode', id: string, name?: string | null, description?: string | null } | null };
 
-export type TextMessageFieldsFragment = { __typename?: 'TextMessageNode', id: string, message?: string | null, timestamp: string, byStudent: boolean, task?: { __typename?: 'CourseLogNode', id: string, assignment?: { __typename?: 'WorksheetAssignmentNode', id: string } | null } | null };
+export type TextMessageFieldsFragment = { __typename?: 'TextMessageNode', id: string, message?: string | null, timestamp?: string | null, byStudent?: boolean | null, task?: { __typename?: 'CourseLogNode', id: string, assignment?: { __typename?: 'WorksheetAssignmentNode', id: string } | null } | null };
 
 export type CreateStudySessionMutationVariables = Exact<{
   sessionId: Scalars['String']['input'];
@@ -1242,6 +1259,11 @@ export type RefreshTokenMutationVariables = Exact<{
 
 export type RefreshTokenMutation = { __typename?: 'Mutation', refreshToken?: { __typename?: 'RefreshPayload', token: string } | null };
 
+export type GetAllWorksheetAssignmentsForAStudentQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAllWorksheetAssignmentsForAStudentQuery = { __typename?: 'Query', myAssignments?: { __typename?: 'CourseLogNodeConnection', edges: Array<{ __typename?: 'CourseLogNodeEdge', node?: { __typename?: 'CourseLogNode', id: string, endTime?: string | null, startTime?: string | null, worksheet?: { __typename?: 'WorksheetNode', name?: string | null, description?: string | null, id: string } | null } | null } | null> } | null };
+
 export type GetMyAssignmentsQueryVariables = Exact<{
   startTime?: InputMaybe<Scalars['DateTime']['input']>;
 }>;
@@ -1259,5 +1281,6 @@ export const TextMessageFieldsFragmentDoc = {"kind":"Document","definitions":[{"
 export const CreateStudySessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateStudySession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createStudySession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"sessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"studySession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sessionId"}}]}}]}}]}}]} as unknown as DocumentNode<CreateStudySessionMutation, CreateStudySessionMutationVariables>;
 export const LoginDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"Login"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ObtainJSONWebTokenInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tokenAuth"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"}}]}}]}}]} as unknown as DocumentNode<LoginMutation, LoginMutationVariables>;
 export const RefreshTokenDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RefreshToken"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"RefreshInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"refreshToken"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"}}]}}]}}]} as unknown as DocumentNode<RefreshTokenMutation, RefreshTokenMutationVariables>;
+export const GetAllWorksheetAssignmentsForAStudentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllWorksheetAssignmentsForAStudent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskIsEmpty"},"value":{"kind":"BooleanValue","value":true}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetAllWorksheetAssignmentsForAStudentQuery, GetAllWorksheetAssignmentsForAStudentQueryVariables>;
 export const GetMyAssignmentsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyAssignments"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startTime"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"DateTime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"startTime"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startTime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"assignment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AssignmentFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"isMcq"}}]}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AssignmentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WorksheetAssignmentNode"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"dueDate"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"completed"}}]}}]} as unknown as DocumentNode<GetMyAssignmentsQuery, GetMyAssignmentsQueryVariables>;
 export const GetWorksheetsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetWorksheets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"worksheets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetWorksheetsQuery, GetWorksheetsQueryVariables>;

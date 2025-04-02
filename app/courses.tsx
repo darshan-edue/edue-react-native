@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { handleLogout } from './utils/tokenRefresh';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_WORKSHEETS } from './graphql/queries/getWorksheets';
+import { GET_ALL_WORKSHEET_ASSIGNMENTS_FOR_STUDENT } from './graphql/queries/getAllWorksheetAssignmentsForStudent';
 import { CREATE_STUDY_SESSION } from './graphql/mutations/createStudySession';
 import { connectToSession } from './utils/websocket';
 import Toast from 'react-native-toast-message';
@@ -12,6 +12,8 @@ interface Worksheet {
   id: string;
   name: string;
   description: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 export default function WorksheetsScreen() {
@@ -21,7 +23,7 @@ export default function WorksheetsScreen() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loadingWorksheetId, setLoadingWorksheetId] = useState<string | null>(null);
   
-  const { loading, error, data } = useQuery(GET_WORKSHEETS);
+  const { loading, error, data } = useQuery(GET_ALL_WORKSHEET_ASSIGNMENTS_FOR_STUDENT);
   const [createStudySession] = useMutation(CREATE_STUDY_SESSION);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export default function WorksheetsScreen() {
   useEffect(() => {
     if (data) {
       console.log('Raw API Response:', JSON.stringify(data, null, 2));
-      const worksheets = data?.worksheets?.edges?.map((edge: any) => edge.node) || [];
+      const worksheets = data?.myAssignments?.edges?.map((edge: any) => edge.node.worksheet) || [];
       console.log('Transformed Worksheets:', JSON.stringify(worksheets, null, 2));
     }
   }, [data]);
@@ -163,7 +165,7 @@ export default function WorksheetsScreen() {
       );
     }
 
-    const worksheets = data?.worksheets?.edges?.map((edge: any) => edge.node) || [];
+    const worksheets = data?.myAssignments?.edges?.map((edge: any) => edge.node.worksheet) || [];
 
     if (worksheets.length === 0) {
       return (
