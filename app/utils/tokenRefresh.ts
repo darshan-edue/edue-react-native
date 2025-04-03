@@ -24,22 +24,33 @@ export const startTokenRefresh = async () => {
         return;
       }
 
+      // The authLink in apollo-client.ts will automatically add the authorization header
       const { data } = await client.mutate({
         mutation: REFRESH_TOKEN,
         variables: {
           input: {
             token: currentToken
           }
+        },
+        // Ensure we're not using cached data for this mutation
+        fetchPolicy: 'no-cache',
+        // Ensure we're not using cached headers
+        context: {
+          headers: {
+            authorization: `JWT ${currentToken}`
+          }
         }
       });
 
       if (data?.refreshToken?.token) {
         await AsyncStorage.setItem('userToken', data.refreshToken.token);
-        console.log('Token refreshed:', data.refreshToken.token);
+        console.log('Token refreshed successfully');
       }
     } catch (error) {
       console.error('Error refreshing token:', error);
       stopTokenRefresh();
+      // If token refresh fails, we should logout the user
+      await handleLogout();
     }
   };
 

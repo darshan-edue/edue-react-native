@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_ALL_TASKS_FOR_A_WORKSHEET } from '../graphql/queries/getAllTasksForAWorksheet';
 import { GET_CURRENT_TASK } from '../graphql/queries/getCurrentTask';
+import { GET_TASK_BY_ID } from '../graphql/queries/getTaskById';
 import Toast from 'react-native-toast-message';
 
 interface Task {
@@ -35,6 +36,20 @@ export default function CanvasScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'Failed to load task content. Please try again later.',
+      });
+    }
+  });
+
+  // Fetch selected task data
+  const { loading: selectedTaskLoading, data: selectedTaskData } = useQuery(GET_TASK_BY_ID, {
+    variables: { id: selectedTask ? String(selectedTask) : null },
+    skip: !selectedTask,
+    onError: (error) => {
+      console.error('Error fetching selected task:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to load selected task content. Please try again later.',
       });
     }
   });
@@ -99,7 +114,7 @@ export default function CanvasScreen() {
     setIsSidebarOpen(false);
   };
 
-  if (currentTaskLoading) {
+  if (currentTaskLoading || selectedTaskLoading) {
     return (
       <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#0000ff" />
@@ -107,8 +122,9 @@ export default function CanvasScreen() {
     );
   }
 
-  const taskContent = currentTaskData?.currentTask?.task?.content || '';
-  const isMcq = currentTaskData?.currentTask?.task?.isMcq || false;
+  // Use selected task data if available, otherwise use current task data
+  const taskContent = selectedTaskData?.getLog?.task?.content || currentTaskData?.currentTask?.task?.content || '';
+  const isMcq = selectedTaskData?.getLog?.task?.isMcq || currentTaskData?.currentTask?.task?.isMcq || false;
 
   return (
     <View className="flex-1 bg-gray-100">

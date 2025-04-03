@@ -29,6 +29,12 @@ export default function Sidebar({
   const { width: screenWidth } = Dimensions.get('window');
   const sidebarWidth = screenWidth * 0.3;
 
+  const handleTaskPress = (task: Task) => {
+    if (task.status === 'completed' || task.status === 'current') {
+      onTaskSelect(task.id);
+    }
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -89,7 +95,8 @@ export default function Sidebar({
                 className={`p-4 border-b border-gray-100 ${
                   selectedTask === task.id ? 'bg-blue-50' : ''
                 }`}
-                onPress={() => onTaskSelect(task.id)}
+                onPress={() => handleTaskPress(task)}
+                disabled={task.status !== 'completed' && task.status !== 'current'}
               >
                 <View className="flex-row items-center">
                   <View className={`w-3 h-3 rounded-full mr-3 ${
