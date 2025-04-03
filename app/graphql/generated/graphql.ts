@@ -193,6 +193,7 @@ export type CountryCodes =
 export type CourseLogNode = Node & {
   __typename?: 'CourseLogNode';
   assignment?: Maybe<WorksheetAssignmentNode>;
+  createdAt: Scalars['DateTime']['output'];
   endTime?: Maybe<Scalars['DateTime']['output']>;
   /** The ID of the object */
   id: Scalars['ID']['output'];
@@ -809,9 +810,11 @@ export type QueryGetLogArgs = {
 export type QueryMyAssignmentsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
+  orderByCreatedAt?: InputMaybe<Scalars['String']['input']>;
   parent?: InputMaybe<Scalars['ID']['input']>;
   startTime?: InputMaybe<Scalars['DateTime']['input']>;
   taskIsEmpty?: InputMaybe<Scalars['Boolean']['input']>;
