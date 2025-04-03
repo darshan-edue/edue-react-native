@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_ALL_TASKS_FOR_A_WORKSHEET } from '../graphql/queries/getAllTasksForAWorksheet';
+import { GET_CURRENT_TASK } from '../graphql/queries/getCurrentTask';
 import Toast from 'react-native-toast-message';
 
 interface Task {
@@ -24,6 +25,20 @@ export default function CanvasScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const sidebarAnimation = useRef(new Animated.Value(-350)).current;
   const allowMultiple = true;
+
+  // Fetch current task data
+  const { loading: currentTaskLoading, data: currentTaskData } = useQuery(GET_CURRENT_TASK, {
+    variables: { id: id ? String(id) : null },
+    onError: (error) => {
+      console.error('Error fetching current task:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to load task content. Please try again later.',
+      });
+    }
+  });
+
   // Fetch tasks data using GraphQL query
   const { loading, error, data } = useQuery(GET_ALL_TASKS_FOR_A_WORKSHEET, {
     variables: { parent: id ? String(id) : null },
@@ -49,23 +64,6 @@ export default function CanvasScreen() {
       });
     }
   });
-
-  const markdownContent = `# Welcome to the Canvas
-
-This is a markdown preview panel that supports various markdown features:
-
-## Features
-- Headers
-- Lists
-- Code blocks
-- And more!
-
-\`\`\`javascript
-const example = "This is a code block";
-console.log(example);
-\`\`\`
-
-Feel free to edit this content with your own markdown!`;
 
   // Example MCQ options
   const mcqOptions = [
@@ -101,19 +99,32 @@ Feel free to edit this content with your own markdown!`;
     setIsSidebarOpen(false);
   };
 
+  if (currentTaskLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  const taskContent = currentTaskData?.currentTask?.task?.content || '';
+  const isMcq = currentTaskData?.currentTask?.task?.isMcq || false;
+
   return (
     <View className="flex-1 bg-gray-100">
       {/* Main Content */}
       <View className="flex-1 flex-row">
         <ScrollView className="flex-1 bg-white px-2 py-1">
           <View>
-            <MarkdownRenderer content={markdownContent} />
-            <MCQOptions
-              options={mcqOptions}
-              allowMultiple={allowMultiple}
-              selectedOptions={selectedOptions}
-              onOptionSelect={handleOptionSelect}
-            />
+            <MarkdownRenderer content={taskContent} />
+            {isMcq && (
+              <MCQOptions
+                options={mcqOptions}
+                allowMultiple={allowMultiple}
+                selectedOptions={selectedOptions}
+                onOptionSelect={handleOptionSelect}
+              />
+            )}
           </View>
         </ScrollView>
         <View className="flex-1 bg-gray-100">

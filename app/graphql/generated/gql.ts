@@ -21,6 +21,7 @@ type Documents = {
     "\n  mutation RefreshToken($input: RefreshInput!) {\n    refreshToken(input: $input) {\n      token\n    }\n  }\n": typeof types.RefreshTokenDocument,
     "\nquery GetAllTasksForAWorksheet($parent: ID) {\n  myAssignments(parent: $parent) {\n    edges {\n      node {\n        id\n        endTime\n        startTime\n        task {\n          name\n          isMcq\n          id\n        }\n      }\n    }\n  }\n}\n": typeof types.GetAllTasksForAWorksheetDocument,
     "\nquery GetAllWorksheetAssignmentsForAStudent {\n  myAssignments(taskIsEmpty: true) {\n    edges {\n      node {\n        id\n        endTime\n        startTime\n        worksheet {\n          name\n          description\n          id\n        }\n      }\n    }\n  }\n}\n": typeof types.GetAllWorksheetAssignmentsForAStudentDocument,
+    "\n  query getCurrentTask($id: ID!) {\n    currentTask(id: $id) {\n      task {\n        id\n        isMcq\n        name\n        content\n      }\n    }\n  }\n": typeof types.GetCurrentTaskDocument,
     "\n  \n  query GetMyAssignments($startTime: DateTime) {\n    myAssignments(startTime: $startTime) {\n      edges {\n        node {\n          id\n          assignment {\n            ...AssignmentFields\n          }\n          worksheet {\n            id\n            name\n            description\n          }\n          task {\n            id\n            name\n            content\n            isMcq\n          }\n          startTime\n          endTime\n        }\n      }\n    }\n  }\n": typeof types.GetMyAssignmentsDocument,
     "\n  query GetWorksheets {\n    worksheets {\n      edges {\n        cursor\n        node {\n          id\n          name\n          description\n        }\n      }\n    }\n  }\n": typeof types.GetWorksheetsDocument,
 };
@@ -32,6 +33,7 @@ const documents: Documents = {
     "\n  mutation RefreshToken($input: RefreshInput!) {\n    refreshToken(input: $input) {\n      token\n    }\n  }\n": types.RefreshTokenDocument,
     "\nquery GetAllTasksForAWorksheet($parent: ID) {\n  myAssignments(parent: $parent) {\n    edges {\n      node {\n        id\n        endTime\n        startTime\n        task {\n          name\n          isMcq\n          id\n        }\n      }\n    }\n  }\n}\n": types.GetAllTasksForAWorksheetDocument,
     "\nquery GetAllWorksheetAssignmentsForAStudent {\n  myAssignments(taskIsEmpty: true) {\n    edges {\n      node {\n        id\n        endTime\n        startTime\n        worksheet {\n          name\n          description\n          id\n        }\n      }\n    }\n  }\n}\n": types.GetAllWorksheetAssignmentsForAStudentDocument,
+    "\n  query getCurrentTask($id: ID!) {\n    currentTask(id: $id) {\n      task {\n        id\n        isMcq\n        name\n        content\n      }\n    }\n  }\n": types.GetCurrentTaskDocument,
     "\n  \n  query GetMyAssignments($startTime: DateTime) {\n    myAssignments(startTime: $startTime) {\n      edges {\n        node {\n          id\n          assignment {\n            ...AssignmentFields\n          }\n          worksheet {\n            id\n            name\n            description\n          }\n          task {\n            id\n            name\n            content\n            isMcq\n          }\n          startTime\n          endTime\n        }\n      }\n    }\n  }\n": types.GetMyAssignmentsDocument,
     "\n  query GetWorksheets {\n    worksheets {\n      edges {\n        cursor\n        node {\n          id\n          name\n          description\n        }\n      }\n    }\n  }\n": types.GetWorksheetsDocument,
 };
@@ -78,6 +80,10 @@ export function gql(source: "\nquery GetAllTasksForAWorksheet($parent: ID) {\n  
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\nquery GetAllWorksheetAssignmentsForAStudent {\n  myAssignments(taskIsEmpty: true) {\n    edges {\n      node {\n        id\n        endTime\n        startTime\n        worksheet {\n          name\n          description\n          id\n        }\n      }\n    }\n  }\n}\n"): (typeof documents)["\nquery GetAllWorksheetAssignmentsForAStudent {\n  myAssignments(taskIsEmpty: true) {\n    edges {\n      node {\n        id\n        endTime\n        startTime\n        worksheet {\n          name\n          description\n          id\n        }\n      }\n    }\n  }\n}\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  query getCurrentTask($id: ID!) {\n    currentTask(id: $id) {\n      task {\n        id\n        isMcq\n        name\n        content\n      }\n    }\n  }\n"): (typeof documents)["\n  query getCurrentTask($id: ID!) {\n    currentTask(id: $id) {\n      task {\n        id\n        isMcq\n        name\n        content\n      }\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
