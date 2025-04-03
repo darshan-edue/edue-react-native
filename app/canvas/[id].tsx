@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, ScrollView, Text, Animated, TouchableWithoutFeedback } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Text, Animated, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import DrawingCanvas from '../components/DrawingCanvas';
 import MarkdownRenderer from '../components/MarkdownRenderer';
@@ -6,6 +6,9 @@ import MCQOptions from '../components/MCQOptions';
 import Sidebar from '../components/Sidebar';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef, useEffect } from 'react';
+import { useQuery } from '@apollo/client';
+import { GET_ALL_TASKS_FOR_A_WORKSHEET } from '../graphql/queries/getAllTasksForAWorksheet';
+import Toast from 'react-native-toast-message';
 
 interface Task {
   id: string;
@@ -18,8 +21,34 @@ export default function CanvasScreen() {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const sidebarAnimation = useRef(new Animated.Value(-350)).current;
   const allowMultiple = true;
+  // Fetch tasks data using GraphQL query
+  const { loading, error, data } = useQuery(GET_ALL_TASKS_FOR_A_WORKSHEET, {
+    variables: { parent: id ? String(id) : null },
+    onCompleted: (data) => {
+      if (data?.myAssignments?.edges) {
+        // Transform the data to match our Task interface
+        const fetchedTasks = data.myAssignments.edges.map((edge: any, index: number) => ({
+          id: edge.node.id,
+          title: edge.node.task?.name || `Task ${index + 1}`, // Use task name if available, otherwise use index
+          status: edge.node.endTime ? 'completed' : 
+                 edge.node.startTime ? 'current' : 
+                 'upcoming',
+        }));
+        setTasks(fetchedTasks);
+      }
+    },
+    onError: (error) => {
+      console.error('Error fetching tasks:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to load tasks. Please try again later.',
+      });
+    }
+  });
 
   const markdownContent = `# Welcome to the Canvas
 
@@ -44,40 +73,6 @@ Feel free to edit this content with your own markdown!`;
     { id: '2', text: 'Option 2' },
     { id: '3', text: 'Option 3' },
     { id: '4', text: 'Option 4' },
-  ];
-
-  // Example tasks - replace with your actual tasks
-  const tasks: Task[] = [
-    { id: '1', title: 'Introduction to Drawing Basics', status: 'completed' },
-    { id: '2', title: 'Understanding Lines and Strokes', status: 'completed' },
-    { id: '3', title: 'Basic Shape Drawing', status: 'completed' },
-    { id: '4', title: 'Perspective Drawing Fundamentals', status: 'completed' },
-    { id: '5', title: 'Shading Techniques', status: 'completed' },
-    { id: '6', title: 'Color Theory Basics', status: 'completed' },
-    { id: '7', title: 'Drawing from Observation', status: 'current' },
-    { id: '8', title: 'Advanced Shading Methods', status: 'upcoming' },
-    { id: '9', title: 'Figure Drawing Basics', status: 'upcoming' },
-    { id: '10', title: 'Portrait Drawing Techniques', status: 'upcoming' },
-    { id: '11', title: 'Landscape Drawing', status: 'upcoming' },
-    { id: '12', title: 'Still Life Composition', status: 'upcoming' },
-    { id: '13', title: 'Gesture Drawing Practice', status: 'upcoming' },
-    { id: '14', title: 'Anatomy for Artists', status: 'upcoming' },
-    { id: '15', title: 'Digital Drawing Tools', status: 'upcoming' },
-    { id: '16', title: 'Mixed Media Techniques', status: 'upcoming' },
-    { id: '17', title: 'Composition Principles', status: 'upcoming' },
-    { id: '18', title: 'Light and Shadow Study', status: 'upcoming' },
-    { id: '19', title: 'Texture Drawing Methods', status: 'upcoming' },
-    { id: '20', title: 'Character Design Basics', status: 'upcoming' },
-    { id: '21', title: 'Environmental Sketching', status: 'upcoming' },
-    { id: '22', title: 'Advanced Perspective', status: 'upcoming' },
-    { id: '23', title: 'Color Harmony Practice', status: 'upcoming' },
-    { id: '24', title: 'Drawing from Imagination', status: 'upcoming' },
-    { id: '25', title: 'Final Project Planning', status: 'upcoming' },
-    { id: '26', title: 'Portfolio Development', status: 'upcoming' },
-    { id: '27', title: 'Art Style Exploration', status: 'upcoming' },
-    { id: '28', title: 'Creative Drawing Exercises', status: 'upcoming' },
-    { id: '29', title: 'Final Project Submission', status: 'upcoming' },
-    { id: '30', title: 'Course Review and Feedback', status: 'upcoming' },
   ];
 
   useEffect(() => {
@@ -178,6 +173,7 @@ Feel free to edit this content with your own markdown!`;
           selectedTask={selectedTask}
           onTaskSelect={handleTaskSelect}
           sidebarAnimation={sidebarAnimation}
+          isLoading={loading}
         />
       </Animated.View>
     </View>

@@ -14,6 +14,7 @@ interface Worksheet {
   description: string;
   startTime?: string;
   endTime?: string;
+  parentId: string;
 }
 
 export default function WorksheetsScreen() {
@@ -37,14 +38,6 @@ export default function WorksheetsScreen() {
       });
     }
   }, [error]);
-
-  useEffect(() => {
-    if (data) {
-      console.log('Raw API Response:', JSON.stringify(data, null, 2));
-      const worksheets = data?.myAssignments?.edges?.map((edge: any) => edge.node.worksheet) || [];
-      console.log('Transformed Worksheets:', JSON.stringify(worksheets, null, 2));
-    }
-  }, [data]);
   
   const getNumColumns = () => {
     const isLandscape = SCREEN_WIDTH > SCREEN_HEIGHT;
@@ -77,7 +70,6 @@ export default function WorksheetsScreen() {
       });
       
       const sessionId = sessionData.createStudySession.studySession.sessionId;
-      console.log('Created study session:', sessionId);
       
       // Connect to WebSocket
       await connectToSession(sessionId);
@@ -108,12 +100,11 @@ export default function WorksheetsScreen() {
 
   const renderWorksheetItem = ({ item }: { item: Worksheet }) => {
     const isLoading = loadingWorksheetId === item.id;
-    
     return (
       <View style={{ width: `${100 / numColumns}%`, padding: 8 }}>
         <TouchableOpacity 
           className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden h-full"
-          onPress={() => !isLoading && handleWorksheetPress(item.id)}
+          onPress={() => !isLoading && handleWorksheetPress(item.parentId)}
           disabled={isLoading}
         >
           <View className="p-4 flex-1 flex flex-col justify-between min-h-[180px]">
@@ -130,7 +121,7 @@ export default function WorksheetsScreen() {
               onPress={(e) => {
                 e.stopPropagation();
                 if (!isLoading) {
-                  handleWorksheetPress(item.id);
+                  handleWorksheetPress(item.parentId);
                 }
               }}
               disabled={isLoading}
@@ -165,8 +156,8 @@ export default function WorksheetsScreen() {
       );
     }
 
-    const worksheets = data?.myAssignments?.edges?.map((edge: any) => edge.node.worksheet) || [];
-
+    
+    const worksheets = data?.myAssignments?.edges?.map((edge: any) => ({...edge.node.worksheet, parentId: edge.node.id})) || [];
     if (worksheets.length === 0) {
       return (
         <View className="flex-1 justify-center items-center">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, ScrollView, Text, Animated, Dimensions } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Text, Animated, Dimensions, ActivityIndicator } from 'react-native';
 
 interface Task {
   id: string;
@@ -14,6 +14,7 @@ interface SidebarProps {
   selectedTask: string | null;
   onTaskSelect: (taskId: string) => void;
   sidebarAnimation: Animated.Value;
+  isLoading?: boolean;
 }
 
 export default function Sidebar({
@@ -23,6 +24,7 @@ export default function Sidebar({
   selectedTask,
   onTaskSelect,
   sidebarAnimation,
+  isLoading = false,
 }: SidebarProps) {
   const { width: screenWidth } = Dimensions.get('window');
   const sidebarWidth = screenWidth * 0.3;
@@ -71,31 +73,42 @@ export default function Sidebar({
           <Text className="text-xl font-bold text-gray-800">Tasks</Text>
         </View>
         <ScrollView className="flex-1">
-          {tasks.map((task) => (
-            <TouchableOpacity
-              key={task.id}
-              className={`p-4 border-b border-gray-100 ${
-                selectedTask === task.id ? 'bg-blue-50' : ''
-              }`}
-              onPress={() => onTaskSelect(task.id)}
-            >
-              <View className="flex-row items-center">
-                <View className={`w-3 h-3 rounded-full mr-3 ${
-                  task.status === 'completed' ? 'bg-green-500' :
-                  task.status === 'current' ? 'bg-blue-500' :
-                  task.status === 'wrong' ? 'bg-red-500' :
-                  'bg-gray-300'
-                }`} />
-                <Text 
-                  className={`text-gray-800 ${
-                    task.status === 'completed' ? 'line-through text-gray-400' : ''
-                  }`}
-                >
-                  {task.title}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+          {isLoading ? (
+            <View className="flex-1 justify-center items-center p-8">
+              <ActivityIndicator size="large" color="#3b82f6" />
+              <Text className="mt-4 text-gray-500">Loading tasks...</Text>
+            </View>
+          ) : tasks.length === 0 ? (
+            <View className="flex-1 justify-center items-center p-8">
+              <Text className="text-gray-500">No tasks available</Text>
+            </View>
+          ) : (
+            tasks.map((task) => (
+              <TouchableOpacity
+                key={task.id}
+                className={`p-4 border-b border-gray-100 ${
+                  selectedTask === task.id ? 'bg-blue-50' : ''
+                }`}
+                onPress={() => onTaskSelect(task.id)}
+              >
+                <View className="flex-row items-center">
+                  <View className={`w-3 h-3 rounded-full mr-3 ${
+                    task.status === 'completed' ? 'bg-green-500' :
+                    task.status === 'current' ? 'bg-blue-500' :
+                    task.status === 'wrong' ? 'bg-red-500' :
+                    'bg-gray-300'
+                  }`} />
+                  <Text 
+                    className={`text-gray-800 ${
+                      task.status === 'completed' ? 'line-through text-gray-400' : ''
+                    }`}
+                  >
+                    {task.title}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
         </ScrollView>
       </Animated.View>
     </>
