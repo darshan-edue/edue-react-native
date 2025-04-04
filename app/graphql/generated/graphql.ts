@@ -39,11 +39,6 @@ export type Scalars = {
    * schema (one of the key benefits of GraphQL).
    */
   JSONString: { input: string; output: string; }
-  /**
-   * Create scalar that ignores normal serialization/deserialization, since
-   * that will be handled by the multipart request spec
-   */
-  Upload: { input: any; output: any; }
 };
 
 export type AnswerLogNode = Node & {
@@ -174,18 +169,6 @@ export type CanvasStrokeNodeEdge = {
   node?: Maybe<CanvasStrokeNode>;
 };
 
-export type ChatInterface = {
-  byStudent?: Maybe<Scalars['Boolean']['output']>;
-  id: Scalars['ID']['output'];
-  task?: Maybe<CourseLogNode>;
-  timestamp?: Maybe<Scalars['DateTime']['output']>;
-};
-
-export type CheckAnswerMutation = {
-  __typename?: 'CheckAnswerMutation';
-  attemptLog?: Maybe<AttemptLogNode>;
-};
-
 /** An enumeration. */
 export type CountryCodes =
   | 'INDIA';
@@ -232,23 +215,6 @@ export type CourseNode = Node & {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-export type CourseNodeConnection = {
-  __typename?: 'CourseNodeConnection';
-  /** Contains the nodes in this connection. */
-  edges: Array<Maybe<CourseNodeEdge>>;
-  /** Pagination data for this connection. */
-  pageInfo: PageInfo;
-};
-
-/** A Relay edge containing a `CourseNode` and its cursor. */
-export type CourseNodeEdge = {
-  __typename?: 'CourseNodeEdge';
-  /** A cursor for use in pagination */
-  cursor: Scalars['String']['output'];
-  /** The item at the end of the edge */
-  node?: Maybe<CourseNode>;
-};
-
 /** An enumeration. */
 export type CoursesCourseStateChoices =
   /** DRAFT */
@@ -257,66 +223,6 @@ export type CoursesCourseStateChoices =
   | 'LIVE'
   /** REMAKE */
   | 'REMAKE';
-
-export type CreateAnswerInput = {
-  content?: InputMaybe<Scalars['String']['input']>;
-  mcqOptionsAdd?: InputMaybe<Array<InputMaybe<CreateAnswerInputAddAnswerMcqoptions>>>;
-  task: Scalars['ID']['input'];
-};
-
-export type CreateAnswerInputAddAnswerMcqoptions = {
-  content: Scalars['String']['input'];
-  task: Scalars['ID']['input'];
-};
-
-export type CreateAnswerLogInput = {
-  attemptlogSet?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  content?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  mcqOptions?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-};
-
-export type CreateAnswerMutation = {
-  __typename?: 'CreateAnswerMutation';
-  answer?: Maybe<AnswerNode>;
-};
-
-export type CreateAttemptLogInput = {
-  answer?: InputMaybe<CreateAnswerLogInput>;
-  assignment: Scalars['ID']['input'];
-  taskLog: Scalars['ID']['input'];
-};
-
-export type CreateCanvasStrokeInput = {
-  stroke: Scalars['String']['input'];
-  task: Scalars['ID']['input'];
-};
-
-export type CreateCanvasStrokeMutation = {
-  __typename?: 'CreateCanvasStrokeMutation';
-  canvasStroke?: Maybe<CanvasStrokeNode>;
-};
-
-export type CreateDumpLogInput = {
-  action: StudentsDumpLogActionChoices;
-  extraInfo?: InputMaybe<Scalars['JSONString']['input']>;
-  object: Scalars['ID']['input'];
-  session: Scalars['ID']['input'];
-};
-
-export type CreateDumpLogMutation = {
-  __typename?: 'CreateDumpLogMutation';
-  dumpLog?: Maybe<DumpLogNode>;
-};
-
-export type CreateMcqOptionsInput = {
-  content?: InputMaybe<Scalars['String']['input']>;
-  task: Scalars['ID']['input'];
-};
-
-export type CreateMcqOptionsMutation = {
-  __typename?: 'CreateMCQOptionsMutation';
-  mcqOptions?: Maybe<McqOptionsNode>;
-};
 
 export type CreateStreamKeyInput = {
   sessionId: Scalars['String']['input'];
@@ -336,28 +242,6 @@ export type CreateStudySessionInput = {
 //   studySession?: Maybe<StudySessionNode>;
 // };
 
-export type CreateTaskInput = {
-  content: Scalars['String']['input'];
-  isMcq?: InputMaybe<Scalars['Boolean']['input']>;
-  name: Scalars['String']['input'];
-  worksheetAdd?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-};
-
-export type CreateTaskMutation = {
-  __typename?: 'CreateTaskMutation';
-  task?: Maybe<TaskNode>;
-};
-
-export type CreateTextMessageInput = {
-  message: Scalars['String']['input'];
-  task: Scalars['ID']['input'];
-};
-
-export type CreateTextMessageMutation = {
-  __typename?: 'CreateTextMessageMutation';
-  textMessage?: Maybe<TextMessageNode>;
-};
-
 export type CreateUserInput = {
   countryCode?: InputMaybe<UsersUserCountryCodeChoices>;
   email?: InputMaybe<Scalars['String']['input']>;
@@ -366,70 +250,6 @@ export type CreateUserInput = {
   password: Scalars['String']['input'];
   phone?: InputMaybe<Scalars['String']['input']>;
   username: Scalars['String']['input'];
-};
-
-export type CreateWorksheetAssignmentInput = {
-  active?: InputMaybe<Scalars['Boolean']['input']>;
-  assignedTo: Scalars['ID']['input'];
-  completed?: InputMaybe<Scalars['Boolean']['input']>;
-  dueDate: Scalars['Date']['input'];
-  worksheet: Scalars['ID']['input'];
-};
-
-export type CreateWorksheetAssignmentMutation = {
-  __typename?: 'CreateWorksheetAssignmentMutation';
-  worksheetAssignment?: Maybe<WorksheetAssignmentNode>;
-};
-
-export type CreateWorksheetInput = {
-  course: Scalars['ID']['input'];
-  description?: InputMaybe<Scalars['String']['input']>;
-  name: Scalars['String']['input'];
-};
-
-export type CreateWorksheetMutation = {
-  __typename?: 'CreateWorksheetMutation';
-  worksheet?: Maybe<WorksheetNode>;
-};
-
-export type DeleteAnswerMutation = {
-  __typename?: 'DeleteAnswerMutation';
-  deletedId?: Maybe<Scalars['ID']['output']>;
-  deletedInputId?: Maybe<Scalars['ID']['output']>;
-  deletedRawId?: Maybe<Scalars['ID']['output']>;
-  found?: Maybe<Scalars['Boolean']['output']>;
-};
-
-export type DeleteMcqOptionsMutation = {
-  __typename?: 'DeleteMCQOptionsMutation';
-  deletedId?: Maybe<Scalars['ID']['output']>;
-  deletedInputId?: Maybe<Scalars['ID']['output']>;
-  deletedRawId?: Maybe<Scalars['ID']['output']>;
-  found?: Maybe<Scalars['Boolean']['output']>;
-};
-
-export type DeleteTaskMutation = {
-  __typename?: 'DeleteTaskMutation';
-  deletedId?: Maybe<Scalars['ID']['output']>;
-  deletedInputId?: Maybe<Scalars['ID']['output']>;
-  deletedRawId?: Maybe<Scalars['ID']['output']>;
-  found?: Maybe<Scalars['Boolean']['output']>;
-};
-
-export type DeleteWorksheetAssignmentMutation = {
-  __typename?: 'DeleteWorksheetAssignmentMutation';
-  deletedId?: Maybe<Scalars['ID']['output']>;
-  deletedInputId?: Maybe<Scalars['ID']['output']>;
-  deletedRawId?: Maybe<Scalars['ID']['output']>;
-  found?: Maybe<Scalars['Boolean']['output']>;
-};
-
-export type DeleteWorksheetMutation = {
-  __typename?: 'DeleteWorksheetMutation';
-  deletedId?: Maybe<Scalars['ID']['output']>;
-  deletedInputId?: Maybe<Scalars['ID']['output']>;
-  deletedRawId?: Maybe<Scalars['ID']['output']>;
-  found?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type DumpLogNode = Node & {
@@ -458,35 +278,6 @@ export type DumpLogNodeEdge = {
   cursor: Scalars['String']['output'];
   /** The item at the end of the edge */
   node?: Maybe<DumpLogNode>;
-};
-
-export type EnrollmentNode = Node & {
-  __typename?: 'EnrollmentNode';
-  active: Scalars['Boolean']['output'];
-  completed: Scalars['Boolean']['output'];
-  course?: Maybe<CourseNode>;
-  endDate?: Maybe<Scalars['DateTime']['output']>;
-  /** The ID of the object */
-  id: Scalars['ID']['output'];
-  startDate: Scalars['DateTime']['output'];
-  user?: Maybe<UserType>;
-};
-
-export type EnrollmentNodeConnection = {
-  __typename?: 'EnrollmentNodeConnection';
-  /** Contains the nodes in this connection. */
-  edges: Array<Maybe<EnrollmentNodeEdge>>;
-  /** Pagination data for this connection. */
-  pageInfo: PageInfo;
-};
-
-/** A Relay edge containing a `EnrollmentNode` and its cursor. */
-export type EnrollmentNodeEdge = {
-  __typename?: 'EnrollmentNodeEdge';
-  /** A cursor for use in pagination */
-  cursor: Scalars['String']['output'];
-  /** The item at the end of the edge */
-  node?: Maybe<EnrollmentNode>;
 };
 
 export type McqOptionsNode = Node & {
@@ -518,61 +309,15 @@ export type McqOptionsNodeEdge = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  checkStudentAnswer?: Maybe<CheckAnswerMutation>;
-  createAnswer?: Maybe<CreateAnswerMutation>;
-  createCanvasStroke?: Maybe<CreateCanvasStrokeMutation>;
-  createDumplog?: Maybe<CreateDumpLogMutation>;
-  createMcqOptions?: Maybe<CreateMcqOptionsMutation>;
   createStreamKey?: Maybe<CreateStreamKeyMutation>;
   createStudySession?: Maybe<CreateStudySessionMutation>;
-  createTask?: Maybe<CreateTaskMutation>;
-  createTextMessage?: Maybe<CreateTextMessageMutation>;
-  createWorksheet?: Maybe<CreateWorksheetMutation>;
-  createWorksheetAssignment?: Maybe<CreateWorksheetAssignmentMutation>;
-  deleteAnswer?: Maybe<DeleteAnswerMutation>;
-  deleteMcqOptions?: Maybe<DeleteMcqOptionsMutation>;
-  deleteTask?: Maybe<DeleteTaskMutation>;
-  deleteWorksheet?: Maybe<DeleteWorksheetMutation>;
-  deleteWorksheetAssignment?: Maybe<DeleteWorksheetAssignmentMutation>;
   otpVerification?: Maybe<UserOtpVerification>;
   refreshToken?: Maybe<RefreshPayload>;
   registration?: Maybe<UserRegistartion>;
-  removeCanvasStroke?: Maybe<RemoveCanvasStrokeMutation>;
   sendOtp?: Maybe<UserSendOtp>;
   /** Obtain JSON Web Token mutation */
   tokenAuth?: Maybe<ObtainJsonWebTokenPayload>;
-  updateAnswer?: Maybe<UpdateAnswerMutation>;
-  updateMcqOptions?: Maybe<UpdateMcqOptionsMutation>;
-  updateTask?: Maybe<UpdateTaskMutation>;
-  updateWorksheet?: Maybe<UpdateWorksheetMutation>;
-  updateWorksheetAssignment?: Maybe<UpdateWorksheetAssignmentMutation>;
-  uploadTaskMedia?: Maybe<TaskMediaUploadMutation>;
   verifyToken?: Maybe<VerifyPayload>;
-};
-
-
-export type MutationCheckStudentAnswerArgs = {
-  input: CreateAttemptLogInput;
-};
-
-
-export type MutationCreateAnswerArgs = {
-  input: CreateAnswerInput;
-};
-
-
-export type MutationCreateCanvasStrokeArgs = {
-  input: CreateCanvasStrokeInput;
-};
-
-
-export type MutationCreateDumplogArgs = {
-  input: CreateDumpLogInput;
-};
-
-
-export type MutationCreateMcqOptionsArgs = {
-  input: CreateMcqOptionsInput;
 };
 
 
@@ -583,51 +328,6 @@ export type MutationCreateStreamKeyArgs = {
 
 export type MutationCreateStudySessionArgs = {
   input: CreateStudySessionInput;
-};
-
-
-export type MutationCreateTaskArgs = {
-  input: CreateTaskInput;
-};
-
-
-export type MutationCreateTextMessageArgs = {
-  input: CreateTextMessageInput;
-};
-
-
-export type MutationCreateWorksheetArgs = {
-  input: CreateWorksheetInput;
-};
-
-
-export type MutationCreateWorksheetAssignmentArgs = {
-  input: CreateWorksheetAssignmentInput;
-};
-
-
-export type MutationDeleteAnswerArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationDeleteMcqOptionsArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationDeleteTaskArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationDeleteWorksheetArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationDeleteWorksheetAssignmentArgs = {
-  id: Scalars['ID']['input'];
 };
 
 
@@ -646,11 +346,6 @@ export type MutationRegistrationArgs = {
 };
 
 
-export type MutationRemoveCanvasStrokeArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
 export type MutationSendOtpArgs = {
   sendOtp: SendOtpInput;
 };
@@ -658,41 +353,6 @@ export type MutationSendOtpArgs = {
 
 export type MutationTokenAuthArgs = {
   input: ObtainJsonWebTokenInput;
-};
-
-
-export type MutationUpdateAnswerArgs = {
-  id: Scalars['ID']['input'];
-  input: UpdateAnswerInput;
-};
-
-
-export type MutationUpdateMcqOptionsArgs = {
-  input: CreateMcqOptionsInput;
-};
-
-
-export type MutationUpdateTaskArgs = {
-  id: Scalars['ID']['input'];
-  input: UpdateTaskInput;
-};
-
-
-export type MutationUpdateWorksheetArgs = {
-  id: Scalars['ID']['input'];
-  input: UpdateWorksheetInput;
-};
-
-
-export type MutationUpdateWorksheetAssignmentArgs = {
-  id: Scalars['ID']['input'];
-  input: UpdateWorksheetAssignmentInput;
-};
-
-
-export type MutationUploadTaskMediaArgs = {
-  file: Scalars['Upload']['input'];
-  taskId: Scalars['ID']['input'];
 };
 
 
@@ -736,78 +396,18 @@ export type PageInfo = {
 
 export type Query = {
   __typename?: 'Query';
-  assignment?: Maybe<WorksheetAssignmentNode>;
-  assignments?: Maybe<WorksheetAssignmentNodeConnection>;
-  course?: Maybe<CourseNode>;
-  courses?: Maybe<CourseNodeConnection>;
-  currentTask?: Maybe<CourseLogNode>;
-  enrollments?: Maybe<EnrollmentNodeConnection>;
-  getLog?: Maybe<CourseLogNode>;
+  assignmentLog?: Maybe<CourseLogNode>;
+  assignmentLogs?: Maybe<CourseLogNodeConnection>;
   me?: Maybe<UserType>;
-  myAssignments?: Maybe<CourseLogNodeConnection>;
-  taskAnswers?: Maybe<AnswerNodeConnection>;
-  taskMcqoptions?: Maybe<McqOptionsNodeConnection>;
-  taskStrokes?: Maybe<CanvasStrokeNodeConnection>;
-  worksheet?: Maybe<WorksheetNode>;
-  worksheets?: Maybe<WorksheetNodeConnection>;
 };
 
 
-export type QueryAssignmentArgs = {
+export type QueryAssignmentLogArgs = {
   id: Scalars['ID']['input'];
 };
 
 
-export type QueryAssignmentsArgs = {
-  active?: InputMaybe<Scalars['Boolean']['input']>;
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  completed?: InputMaybe<Scalars['Boolean']['input']>;
-  dueDate?: InputMaybe<Scalars['Date']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-export type QueryCourseArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryCoursesArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  isApproved?: InputMaybe<Scalars['Boolean']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-export type QueryCurrentTaskArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryEnrollmentsArgs = {
-  active?: InputMaybe<Scalars['Boolean']['input']>;
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  completed?: InputMaybe<Scalars['Boolean']['input']>;
-  course?: InputMaybe<Scalars['ID']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-};
-
-
-export type QueryGetLogArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryMyAssignmentsArgs = {
+export type QueryAssignmentLogsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   before?: InputMaybe<Scalars['String']['input']>;
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -818,52 +418,6 @@ export type QueryMyAssignmentsArgs = {
   parent?: InputMaybe<Scalars['ID']['input']>;
   startTime?: InputMaybe<Scalars['DateTime']['input']>;
   taskIsEmpty?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-
-export type QueryTaskAnswersArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  task?: InputMaybe<Scalars['ID']['input']>;
-};
-
-
-export type QueryTaskMcqoptionsArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  task?: InputMaybe<Scalars['ID']['input']>;
-};
-
-
-export type QueryTaskStrokesArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  task?: InputMaybe<Scalars['ID']['input']>;
-};
-
-
-export type QueryWorksheetArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryWorksheetsArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  course?: InputMaybe<Scalars['ID']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type RefreshInput = {
@@ -877,14 +431,6 @@ export type RefreshPayload = {
   payload: Scalars['GenericScalar']['output'];
   refreshExpiresIn: Scalars['Int']['output'];
   token: Scalars['String']['output'];
-};
-
-export type RemoveCanvasStrokeMutation = {
-  __typename?: 'RemoveCanvasStrokeMutation';
-  deletedId?: Maybe<Scalars['ID']['output']>;
-  deletedInputId?: Maybe<Scalars['ID']['output']>;
-  deletedRawId?: Maybe<Scalars['ID']['output']>;
-  found?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type SendOtpInput = {
@@ -973,12 +519,6 @@ export type StudySessionNodeDumplogsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type TaskMediaUploadMutation = {
-  __typename?: 'TaskMediaUploadMutation';
-  success?: Maybe<Scalars['Boolean']['output']>;
-  uploadedFileUrl?: Maybe<Scalars['String']['output']>;
-};
-
 export type TaskNode = Node & {
   __typename?: 'TaskNode';
   answers: AnswerNodeConnection;
@@ -1025,89 +565,6 @@ export type TaskNodeEdge = {
   cursor: Scalars['String']['output'];
   /** The item at the end of the edge */
   node?: Maybe<TaskNode>;
-};
-
-export type TextMessageNode = ChatInterface & Node & {
-  __typename?: 'TextMessageNode';
-  byStudent?: Maybe<Scalars['Boolean']['output']>;
-  id: Scalars['ID']['output'];
-  message?: Maybe<Scalars['String']['output']>;
-  task?: Maybe<CourseLogNode>;
-  textmessage?: Maybe<TextMessageNode>;
-  timestamp?: Maybe<Scalars['DateTime']['output']>;
-};
-
-export type UpdateAnswerInput = {
-  content?: InputMaybe<Scalars['String']['input']>;
-  mcqOptionsAdd?: InputMaybe<Array<InputMaybe<UpdateAnswerInputAddAnswerMcqoptions>>>;
-  task?: InputMaybe<Scalars['ID']['input']>;
-};
-
-export type UpdateAnswerInputAddAnswerMcqoptions = {
-  content: Scalars['String']['input'];
-  task: Scalars['ID']['input'];
-};
-
-export type UpdateAnswerMutation = {
-  __typename?: 'UpdateAnswerMutation';
-  answer?: Maybe<AnswerNode>;
-};
-
-export type UpdateMcqOptionsMutation = {
-  __typename?: 'UpdateMCQOptionsMutation';
-  mcqOptions?: Maybe<McqOptionsNode>;
-};
-
-export type UpdateTaskInput = {
-  answers?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  answersAdd?: InputMaybe<Array<InputMaybe<UpdateTaskInputAddTaskAnswers>>>;
-  content?: InputMaybe<Scalars['String']['input']>;
-  isMcq?: InputMaybe<Scalars['Boolean']['input']>;
-  name: Scalars['String']['input'];
-  options?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  optionsAdd?: InputMaybe<Array<InputMaybe<UpdateTaskInputAddTaskOptions>>>;
-};
-
-export type UpdateTaskInputAddTaskAnswers = {
-  content?: InputMaybe<Scalars['String']['input']>;
-  mcqOptions?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-};
-
-export type UpdateTaskInputAddTaskOptions = {
-  answer?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  content?: InputMaybe<Scalars['String']['input']>;
-  options?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-};
-
-export type UpdateTaskMutation = {
-  __typename?: 'UpdateTaskMutation';
-  task?: Maybe<TaskNode>;
-};
-
-export type UpdateWorksheetAssignmentInput = {
-  active?: InputMaybe<Scalars['Boolean']['input']>;
-  assignedTo?: InputMaybe<Scalars['ID']['input']>;
-  completed?: InputMaybe<Scalars['Boolean']['input']>;
-  dueDate?: InputMaybe<Scalars['Date']['input']>;
-  worksheet?: InputMaybe<Scalars['ID']['input']>;
-};
-
-export type UpdateWorksheetAssignmentMutation = {
-  __typename?: 'UpdateWorksheetAssignmentMutation';
-  worksheetAssignment?: Maybe<WorksheetAssignmentNode>;
-};
-
-export type UpdateWorksheetInput = {
-  course?: InputMaybe<Scalars['ID']['input']>;
-  description?: InputMaybe<Scalars['String']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
-  tasks?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-  tasksUpdate?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
-};
-
-export type UpdateWorksheetMutation = {
-  __typename?: 'UpdateWorksheetMutation';
-  worksheet?: Maybe<WorksheetNode>;
 };
 
 export type UserOtpVerification = {
@@ -1182,23 +639,6 @@ export type WorksheetAssignmentNode = Node & {
   worksheet?: Maybe<WorksheetNode>;
 };
 
-export type WorksheetAssignmentNodeConnection = {
-  __typename?: 'WorksheetAssignmentNodeConnection';
-  /** Contains the nodes in this connection. */
-  edges: Array<Maybe<WorksheetAssignmentNodeEdge>>;
-  /** Pagination data for this connection. */
-  pageInfo: PageInfo;
-};
-
-/** A Relay edge containing a `WorksheetAssignmentNode` and its cursor. */
-export type WorksheetAssignmentNodeEdge = {
-  __typename?: 'WorksheetAssignmentNodeEdge';
-  /** A cursor for use in pagination */
-  cursor: Scalars['String']['output'];
-  /** The item at the end of the edge */
-  node?: Maybe<WorksheetAssignmentNode>;
-};
-
 export type WorksheetNode = Node & {
   __typename?: 'WorksheetNode';
   course?: Maybe<CourseNode>;
@@ -1220,26 +660,7 @@ export type WorksheetNodeTasksArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type WorksheetNodeConnection = {
-  __typename?: 'WorksheetNodeConnection';
-  /** Contains the nodes in this connection. */
-  edges: Array<Maybe<WorksheetNodeEdge>>;
-  /** Pagination data for this connection. */
-  pageInfo: PageInfo;
-};
-
-/** A Relay edge containing a `WorksheetNode` and its cursor. */
-export type WorksheetNodeEdge = {
-  __typename?: 'WorksheetNodeEdge';
-  /** A cursor for use in pagination */
-  cursor: Scalars['String']['output'];
-  /** The item at the end of the edge */
-  node?: Maybe<WorksheetNode>;
-};
-
 export type AssignmentFieldsFragment = { __typename?: 'WorksheetAssignmentNode', id: string, dueDate?: string | null, active: boolean, completed: boolean, worksheet?: { __typename?: 'WorksheetNode', id: string, name?: string | null, description?: string | null } | null };
-
-export type TextMessageFieldsFragment = { __typename?: 'TextMessageNode', id: string, message?: string | null, timestamp?: string | null, byStudent?: boolean | null, task?: { __typename?: 'CourseLogNode', id: string, assignment?: { __typename?: 'WorksheetAssignmentNode', id: string } | null } | null };
 
 export type CreateStudySessionMutationVariables = Exact<{
   sessionId: Scalars['String']['input'];
@@ -1267,47 +688,40 @@ export type GetAllTasksForAWorksheetQueryVariables = Exact<{
 }>;
 
 
-export type GetAllTasksForAWorksheetQuery = { __typename?: 'Query', myAssignments?: { __typename?: 'CourseLogNodeConnection', edges: Array<{ __typename?: 'CourseLogNodeEdge', node?: { __typename?: 'CourseLogNode', id: string, endTime?: string | null, startTime?: string | null, task?: { __typename?: 'TaskNode', name: string, isMcq: boolean, id: string } | null } | null } | null> } | null };
+export type GetAllTasksForAWorksheetQuery = { __typename?: 'Query', assignmentLogs?: { __typename?: 'CourseLogNodeConnection', edges: Array<{ __typename?: 'CourseLogNodeEdge', node?: { __typename?: 'CourseLogNode', id: string, endTime?: string | null, startTime?: string | null, task?: { __typename?: 'TaskNode', name: string, isMcq: boolean, id: string } | null } | null } | null> } | null };
 
 export type GetAllWorksheetAssignmentsForAStudentQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllWorksheetAssignmentsForAStudentQuery = { __typename?: 'Query', myAssignments?: { __typename?: 'CourseLogNodeConnection', edges: Array<{ __typename?: 'CourseLogNodeEdge', node?: { __typename?: 'CourseLogNode', id: string, endTime?: string | null, startTime?: string | null, worksheet?: { __typename?: 'WorksheetNode', name?: string | null, description?: string | null, id: string } | null } | null } | null> } | null };
+export type GetAllWorksheetAssignmentsForAStudentQuery = { __typename?: 'Query', assignmentLogs?: { __typename?: 'CourseLogNodeConnection', edges: Array<{ __typename?: 'CourseLogNodeEdge', node?: { __typename?: 'CourseLogNode', id: string, endTime?: string | null, startTime?: string | null, worksheet?: { __typename?: 'WorksheetNode', name?: string | null, description?: string | null, id: string } | null } | null } | null> } | null };
 
 export type GetCurrentTaskQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetCurrentTaskQuery = { __typename?: 'Query', currentTask?: { __typename?: 'CourseLogNode', task?: { __typename?: 'TaskNode', id: string, isMcq: boolean, name: string, content?: string | null } | null } | null };
+export type GetCurrentTaskQuery = { __typename?: 'Query', assignmentLog?: { __typename?: 'CourseLogNode', task?: { __typename?: 'TaskNode', id: string, isMcq: boolean, name: string, content?: string | null } | null } | null };
 
 export type GetMyAssignmentsQueryVariables = Exact<{
   startTime?: InputMaybe<Scalars['DateTime']['input']>;
 }>;
 
 
-export type GetMyAssignmentsQuery = { __typename?: 'Query', myAssignments?: { __typename?: 'CourseLogNodeConnection', edges: Array<{ __typename?: 'CourseLogNodeEdge', node?: { __typename?: 'CourseLogNode', id: string, startTime?: string | null, endTime?: string | null, assignment?: { __typename?: 'WorksheetAssignmentNode', id: string, dueDate?: string | null, active: boolean, completed: boolean, worksheet?: { __typename?: 'WorksheetNode', id: string, name?: string | null, description?: string | null } | null } | null, worksheet?: { __typename?: 'WorksheetNode', id: string, name?: string | null, description?: string | null } | null, task?: { __typename?: 'TaskNode', id: string, name: string, content?: string | null, isMcq: boolean } | null } | null } | null> } | null };
+export type GetMyAssignmentsQuery = { __typename?: 'Query', assignmentLogs?: { __typename?: 'CourseLogNodeConnection', edges: Array<{ __typename?: 'CourseLogNodeEdge', node?: { __typename?: 'CourseLogNode', id: string, startTime?: string | null, endTime?: string | null, assignment?: { __typename?: 'WorksheetAssignmentNode', id: string, dueDate?: string | null, active: boolean, completed: boolean, worksheet?: { __typename?: 'WorksheetNode', id: string, name?: string | null, description?: string | null } | null } | null, worksheet?: { __typename?: 'WorksheetNode', id: string, name?: string | null, description?: string | null } | null, task?: { __typename?: 'TaskNode', id: string, name: string, content?: string | null, isMcq: boolean } | null } | null } | null> } | null };
 
 export type GetATaskUsingIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetATaskUsingIdQuery = { __typename?: 'Query', getLog?: { __typename?: 'CourseLogNode', id: string, task?: { __typename?: 'TaskNode', content?: string | null, name: string, isMcq: boolean } | null } | null };
-
-export type GetWorksheetsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetWorksheetsQuery = { __typename?: 'Query', worksheets?: { __typename?: 'WorksheetNodeConnection', edges: Array<{ __typename?: 'WorksheetNodeEdge', cursor: string, node?: { __typename?: 'WorksheetNode', id: string, name?: string | null, description?: string | null } | null } | null> } | null };
+export type GetATaskUsingIdQuery = { __typename?: 'Query', assignmentLog?: { __typename?: 'CourseLogNode', id: string, task?: { __typename?: 'TaskNode', content?: string | null, name: string, isMcq: boolean } | null } | null };
 
 export const AssignmentFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AssignmentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WorksheetAssignmentNode"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"dueDate"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"completed"}}]}}]} as unknown as DocumentNode<AssignmentFieldsFragment, unknown>;
-export const TextMessageFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TextMessageFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TextMessageNode"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"byStudent"}},{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"assignment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<TextMessageFieldsFragment, unknown>;
 export const CreateStudySessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateStudySession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createStudySession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"sessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"studySession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sessionId"}}]}}]}}]}}]} as unknown as DocumentNode<CreateStudySessionMutation, CreateStudySessionMutationVariables>;
 export const LoginDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"Login"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ObtainJSONWebTokenInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tokenAuth"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"}}]}}]}}]} as unknown as DocumentNode<LoginMutation, LoginMutationVariables>;
 export const RefreshTokenDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RefreshToken"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"RefreshInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"refreshToken"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"}}]}}]}}]} as unknown as DocumentNode<RefreshTokenMutation, RefreshTokenMutationVariables>;
-export const GetAllTasksForAWorksheetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllTasksForAWorksheet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"parent"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"parent"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parent"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"isMcq"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetAllTasksForAWorksheetQuery, GetAllTasksForAWorksheetQueryVariables>;
-export const GetAllWorksheetAssignmentsForAStudentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllWorksheetAssignmentsForAStudent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskIsEmpty"},"value":{"kind":"BooleanValue","value":true}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetAllWorksheetAssignmentsForAStudentQuery, GetAllWorksheetAssignmentsForAStudentQueryVariables>;
-export const GetCurrentTaskDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getCurrentTask"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentTask"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"isMcq"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"content"}}]}}]}}]}}]} as unknown as DocumentNode<GetCurrentTaskQuery, GetCurrentTaskQueryVariables>;
-export const GetMyAssignmentsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyAssignments"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startTime"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"DateTime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"startTime"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startTime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"assignment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AssignmentFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"isMcq"}}]}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AssignmentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WorksheetAssignmentNode"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"dueDate"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"completed"}}]}}]} as unknown as DocumentNode<GetMyAssignmentsQuery, GetMyAssignmentsQueryVariables>;
-export const GetATaskUsingIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetATaskUsingID"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getLog"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"isMcq"}}]}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<GetATaskUsingIdQuery, GetATaskUsingIdQueryVariables>;
-export const GetWorksheetsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetWorksheets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"worksheets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetWorksheetsQuery, GetWorksheetsQueryVariables>;
+export const GetAllTasksForAWorksheetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllTasksForAWorksheet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"parent"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"assignmentLogs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"parent"},"value":{"kind":"Variable","name":{"kind":"Name","value":"parent"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"isMcq"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetAllTasksForAWorksheetQuery, GetAllTasksForAWorksheetQueryVariables>;
+export const GetAllWorksheetAssignmentsForAStudentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllWorksheetAssignmentsForAStudent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"assignmentLogs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskIsEmpty"},"value":{"kind":"BooleanValue","value":true}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetAllWorksheetAssignmentsForAStudentQuery, GetAllWorksheetAssignmentsForAStudentQueryVariables>;
+export const GetCurrentTaskDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getCurrentTask"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"assignmentLog"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"isMcq"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"content"}}]}}]}}]}}]} as unknown as DocumentNode<GetCurrentTaskQuery, GetCurrentTaskQueryVariables>;
+export const GetMyAssignmentsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMyAssignments"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startTime"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"DateTime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"assignmentLogs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"startTime"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startTime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"assignment"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AssignmentFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"isMcq"}}]}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AssignmentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WorksheetAssignmentNode"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"worksheet"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"dueDate"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"completed"}}]}}]} as unknown as DocumentNode<GetMyAssignmentsQuery, GetMyAssignmentsQueryVariables>;
+export const GetATaskUsingIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetATaskUsingID"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"assignmentLog"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"isMcq"}}]}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<GetATaskUsingIdQuery, GetATaskUsingIdQueryVariables>;

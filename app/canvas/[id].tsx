@@ -199,9 +199,9 @@ export default function CanvasScreen() {
   const { loading, error, data } = useQuery(GET_ALL_TASKS_FOR_A_WORKSHEET, {
     variables: { parent: id ? String(id) : null },
     onCompleted: (data) => {
-      if (data?.myAssignments?.edges) {
+      if (data?.assignmentLogs?.edges) {
         // Transform the data to match our Task interface
-        const fetchedTasks = data.myAssignments.edges.map((edge: any, index: number) => ({
+        const fetchedTasks = data.assignmentLogs.edges.map((edge: any, index: number) => ({
           id: edge.node.id,
           title: edge.node.task?.name || `Task ${index + 1}`, // Use task name if available, otherwise use index
           status: edge.node.endTime ? 'completed' : 
@@ -264,8 +264,8 @@ export default function CanvasScreen() {
   }
 
   // Use selected task data if available, otherwise use current task data
-  const taskContent = selectedTaskData?.getLog?.task?.content || currentTaskData?.currentTask?.task?.content || '';
-  const isMcq = selectedTaskData?.getLog?.task?.isMcq || currentTaskData?.currentTask?.task?.isMcq || false;
+  const taskContent = selectedTaskData?.assignmentLog?.task?.content || currentTaskData?.assignmentLog?.task?.content || '';
+  const isMcq = selectedTaskData?.assignmentLog?.task?.isMcq || currentTaskData?.assignmentLog?.task?.isMcq || false;
 
   return (
     <View className="flex-1 bg-gray-100">

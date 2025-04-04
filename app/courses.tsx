@@ -161,7 +161,7 @@ export default function WorksheetsScreen() {
     }
 
     
-    const worksheets = data?.myAssignments?.edges?.map((edge: any) => ({...edge.node.worksheet, parentId: edge.node.id})) || [];
+    const worksheets = data?.assignmentLogs?.edges?.map((edge: any) => ({...edge.node.worksheet, parentId: edge.node.id})) || [];
     if (worksheets.length === 0) {
       return (
         <View className="flex-1 justify-center items-center">
@@ -193,7 +193,7 @@ export default function WorksheetsScreen() {
       <Text className="text-3xl font-bold mb-6 text-gray-800">Worksheets</Text>
       {renderContent()}
       <View className="absolute bottom-0 left-0 right-0 h-20 bg-transparent items-center px-6 pb-4">
-        <View className="flex-row bg-white rounded-full p-2 w-full max-w-[400px] justify-around items-center shadow-lg">
+        <View className="flex-row bg-white rounded-full p-2 w-full max-w-[400px]r justify-around items-center shadow-lg">
           <TouchableOpacity className="items-center justify-center w-12 h-12 rounded-full">
             <Image 
               source={require('../assets/images/home.png')} 
