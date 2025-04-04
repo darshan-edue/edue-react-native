@@ -74,8 +74,12 @@ export default function WorksheetsScreen() {
       // Connect to WebSocket
       await connectToSession(sessionId);
       
-      // Navigate to the next page with the session ID
-      router.push(`/canvas/${worksheetId}`);
+      // Navigate to the next page with both IDs
+      router.push({
+        // @ts-ignore
+        pathname: `/canvas/${worksheetId}`,
+        params: { sessionId }
+      });
     } catch (error) {
       console.error('Error:', error);
       Toast.show({

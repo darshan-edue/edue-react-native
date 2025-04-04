@@ -44,7 +44,7 @@ export const startTokenRefresh = async () => {
 
       if (data?.refreshToken?.token) {
         await AsyncStorage.setItem('userToken', data.refreshToken.token);
-        console.log('Token refreshed successfully');
+        console.log('Token refreshed successfully', data.refreshToken.token);
       }
     } catch (error) {
       console.error('Error refreshing token:', error);

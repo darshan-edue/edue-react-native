@@ -11,6 +11,7 @@ import { GET_ALL_TASKS_FOR_A_WORKSHEET } from '../graphql/queries/getAllTasksFor
 import { GET_CURRENT_TASK } from '../graphql/queries/getCurrentTask';
 import { GET_TASK_BY_ID } from '../graphql/queries/getTaskById';
 import Toast from 'react-native-toast-message';
+import { connectToSession } from '../utils/websocket';
 
 interface Task {
   id: string;
@@ -19,17 +20,157 @@ interface Task {
 }
 
 export default function CanvasScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, sessionId } = useLocalSearchParams<{ id: string; sessionId: string }>();
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [wsConnection, setWsConnection] = useState<WebSocket | null>(null);
+  const [strokesData, setStrokesData] = useState<any[]>([]);
   const sidebarAnimation = useRef(new Animated.Value(-350)).current;
   const allowMultiple = true;
+
+  console.log('=============================',wsConnection,'=============================')
+
+  // Function to send WebSocket messages
+  const sendWebSocketMessage = (command: string, data: any, socket: WebSocket) => {
+    // Use the passed socket instead of wsConnection state
+    if (!socket) {
+      console.error('No WebSocket connection available');
+      return;
+    }
+
+    // Check connection state
+    console.log('========================== WebSocket state when sending:', socket.readyState);
+    
+    if (socket.readyState === WebSocket.OPEN) {
+      const message = {
+        command,
+        data,
+      };
+      console.log('========================== Sending message:', message);
+      socket.send(JSON.stringify(message));
+    } else {
+      console.error(`WebSocket is not ready. Current state: ${socket.readyState}`);
+    }
+  };
+
+  // Example function to get stroke data
+  const getStrokeData = (taskId: string, socket: WebSocket) => {
+    sendWebSocketMessage('get_stroke', {
+      task_id: taskId,
+    }, socket);
+  };
+
+  const createStrokeHandler = (taskId: string, socket: WebSocket, stroke:string) => {
+    console.log('*************************',socket,'*************************');
+    sendWebSocketMessage('create_stroke', {
+      task_id: taskId,
+      stroke: stroke,
+    }, socket);
+  };
+
+  // WebSocket connection setup
+  useEffect(() => {
+    let ws: WebSocket | null = null;
+
+    const setupWebSocket = async () => {
+      try {
+        if (!sessionId) {
+          console.error('No session ID provided');
+          return;
+        }
+
+        console.log('========================== Attempting to connect WebSocket');
+        ws = await connectToSession(sessionId);
+        console.log('========================== WebSocket connection returned');
+        
+        // Set up all event handlers before setting the state
+        ws.onopen = () => {
+          console.log('========================== WebSocket onopen event fired');
+          if (id && ws) {
+            console.log('========================== Sending get_stroke request for task:', id);
+            getStrokeData(id, ws);
+          }
+        };
+
+        // Set up message handler
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('========================== Received WebSocket message:', data);
+            if (data.message && Array.isArray(data.message)) {
+              const parsedStrokes = data.message.map((item: any) => {
+                const strokeData = JSON.parse(item.stroke);
+                return {
+                  ...strokeData,
+                  id: item.id
+                };
+              });
+              setStrokesData(parsedStrokes);
+            }
+          } catch (error) {
+            console.error('Error parsing WebSocket message:', error);
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error('========================== WebSocket error:', error);
+        };
+
+        ws.onclose = (event) => {
+          console.log('========================== WebSocket connection closed', {
+            code: event.code,
+            reason: event.reason,
+            wasClean: event.wasClean
+          });
+          setWsConnection(null);
+        };
+
+        // Now set the connection in state
+        setWsConnection(ws);
+
+        // If the socket is already open, send the message immediately
+        if (ws.readyState === WebSocket.OPEN && id) {
+          console.log('========================== WebSocket is already open, sending message');
+          getStrokeData(id, ws);
+        }
+
+        // Cleanup on unmount
+        return () => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.close();
+          }
+        };
+      } catch (error) {
+        console.error('========================== WebSocket setup error:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Connection Error',
+          text2: 'Failed to connect to the drawing session. Please try again.',
+        });
+      }
+    };
+
+    setupWebSocket();
+
+    // Cleanup function
+    return () => {
+      if (ws) {
+        console.log('========================== Cleaning up WebSocket connection');
+        ws.close();
+      }
+    };
+  }, [sessionId, id]);
+
+  console.log('=============================',strokesData,'=============================')
 
   // Fetch current task data
   const { loading: currentTaskLoading, data: currentTaskData } = useQuery(GET_CURRENT_TASK, {
     variables: { id: id ? String(id) : null },
+    onCompleted: (data) => {
+      console.log('Current Task ID:', data?.currentTask?.task?.id);
+    },
     onError: (error) => {
       console.error('Error fetching current task:', error);
       Toast.show({
@@ -144,7 +285,12 @@ export default function CanvasScreen() {
           </View>
         </ScrollView>
         <View className="flex-1 bg-gray-100">
-          <DrawingCanvas courseId={id} />
+          <DrawingCanvas 
+            courseId={id} 
+            createStrokeHandler={createStrokeHandler} 
+            ws={wsConnection} 
+            initialStrokes={strokesData}
+          />
         </View>
       </View>
 
