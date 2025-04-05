@@ -9,6 +9,10 @@ export const getToken = async (): Promise<string | null> => {
   return await AsyncStorage.getItem('userToken');
 };
 
+export const getRefreshToken = async (): Promise<string | null> => {
+  return await AsyncStorage.getItem('refreshToken');
+};
+
 export const startTokenRefresh = async () => {
   // Clear any existing interval
   if (refreshInterval) {
@@ -18,8 +22,8 @@ export const startTokenRefresh = async () => {
   // Function to refresh token
   const refreshToken = async () => {
     try {
-      const currentToken = await AsyncStorage.getItem('userToken');
-      if (!currentToken) {
+      const currentRefreshToken = await AsyncStorage.getItem('refreshToken');
+      if (!currentRefreshToken) {
         stopTokenRefresh();
         return;
       }
@@ -29,7 +33,7 @@ export const startTokenRefresh = async () => {
         mutation: REFRESH_TOKEN,
         variables: {
           input: {
-            token: currentToken
+            token: currentRefreshToken
           }
         },
         // Ensure we're not using cached data for this mutation
@@ -37,14 +41,15 @@ export const startTokenRefresh = async () => {
         // Ensure we're not using cached headers
         context: {
           headers: {
-            authorization: `JWT ${currentToken}`
+            authorization: `JWT ${currentRefreshToken}`
           }
         }
       });
 
-      if (data?.refreshToken?.token) {
+      if (data?.refreshToken?.token && data?.refreshToken?.refreshToken) {
         await AsyncStorage.setItem('userToken', data.refreshToken.token);
-        console.log('Token refreshed successfully', data.refreshToken.token);
+        await AsyncStorage.setItem('refreshToken', data.refreshToken.refreshToken);
+        console.log('Tokens refreshed successfully');
       }
     } catch (error) {
       console.error('Error refreshing token:', error);
@@ -72,8 +77,9 @@ export const handleLogout = async () => {
   // Stop token refresh
   stopTokenRefresh();
   
-  // Remove token from storage
+  // Remove tokens from storage
   await AsyncStorage.removeItem('userToken');
+  await AsyncStorage.removeItem('refreshToken');
   
   // Redirect to login
   router.replace('/login');

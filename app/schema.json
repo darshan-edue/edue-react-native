@@ -3579,6 +3579,22 @@
                   "ofType": null
                 }
               }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "refreshToken",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              }
             }
           ],
           "inputFields": null,
@@ -3779,6 +3795,22 @@
                   "ofType": null
                 }
               }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "refreshToken",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              }
             }
           ],
           "inputFields": null,
@@ -3795,7 +3827,7 @@
             {
               "defaultValue": null,
               "description": null,
-              "name": "token",
+              "name": "refreshToken",
               "type": {
                 "kind": "SCALAR",
                 "name": "String",
