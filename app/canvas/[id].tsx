@@ -221,13 +221,17 @@ export default function CanvasScreen() {
     }
   });
 
-  // Example MCQ options
-  const mcqOptions = [
-    { id: '1', text: 'Option 1' },
-    { id: '2', text: 'Option 2' },
-    { id: '3', text: 'Option 3' },
-    { id: '4', text: 'Option 4' },
-  ];
+  // Use selected task data if available, otherwise use current task data
+  const taskContent = selectedTaskData?.assignmentLog?.task?.content || currentTaskData?.assignmentLog?.task?.content || '';
+  const isMcq = selectedTaskData?.assignmentLog?.task?.isMcq || currentTaskData?.assignmentLog?.task?.isMcq || false;
+  
+  // Transform MCQ options from the GraphQL response
+  const mcqOptions = (selectedTaskData?.assignmentLog?.task?.options?.edges || currentTaskData?.assignmentLog?.task?.options?.edges || [])
+    .map((edge: { node: { id: string; content: string } }) => ({
+      id: edge.node.id,
+      text: edge.node.content
+    }))
+    .filter((option: { id: string; text: string }) => option.id && option.text);
 
   useEffect(() => {
     Animated.timing(sidebarAnimation, {
@@ -262,10 +266,6 @@ export default function CanvasScreen() {
       </View>
     );
   }
-
-  // Use selected task data if available, otherwise use current task data
-  const taskContent = selectedTaskData?.assignmentLog?.task?.content || currentTaskData?.assignmentLog?.task?.content || '';
-  const isMcq = selectedTaskData?.assignmentLog?.task?.isMcq || currentTaskData?.assignmentLog?.task?.isMcq || false;
 
   return (
     <View className="flex-1 bg-gray-100">

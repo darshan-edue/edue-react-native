@@ -7,6 +7,14 @@ query GetATaskUsingID($id: ID!) {
       content
       name
       isMcq
+      options {
+        edges {
+          node {
+            id
+            content
+          }
+        }
+      }
     }
     id
   }

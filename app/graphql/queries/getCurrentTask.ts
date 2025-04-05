@@ -8,6 +8,14 @@ export const GET_CURRENT_TASK = gql`
         isMcq
         name
         content
+        options {
+          edges {
+            node {
+              id
+              content
+            }
+          }
+        }
       }
     }
   }
